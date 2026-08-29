@@ -1,7 +1,10 @@
 # Agents-for-Humans
 Deploying with AgentCore is a smart architectural choice and will strengthen your Implementation score.
 
-## Good Neighbor Agents
+## Articles
+https://builder.aws.com/content/3Ibk3sjdeaROv4MknrRRZWqSxhU/agents-for-humans
+
+### Good Neighbor Agents
 
 Good Neighbor Agents are AI agents designed to serve **groups of people and community organizations**, not just individual users. They are built for:
 
