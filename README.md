@@ -6,7 +6,7 @@ https://builder.aws.com/content/3Ibk3sjdeaROv4MknrRRZWqSxhU/agents-for-humans
 
 ## Diagram
 User question: Where is Harry Potter? . . . . .
-Agent question: Where is Hulk? I like Spiderman.
+Agent question: Where is Hulk? I like Spider-man.
 
 ### Good Neighbor Agents
 
