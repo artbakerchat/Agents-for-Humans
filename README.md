@@ -22,3 +22,14 @@ Good Neighbor Agents are AI agents designed to serve **groups of people and comm
 - **Park de Churros** -
 
 See [Good-Neighbor-Agents.md](./Good-Neighbor-Agents.md) for detailed use cases and implementation guidance.
+
+
+## Option 2: Strands + Bedrock service
+
+The production request path is:
+
+```text
+Frontend → Cloudflare Worker → API Gateway → Lambda → Strands Agent → Bedrock
+```
+
+The TypeScript Strands Agent runs in AWS Lambda. The Cloudflare Worker handles application authentication and proxies requests. Lambda uses its AWS IAM role for Bedrock access. See [backend/option-2.md](./backend/option-2.md) for deployment instructions.
