@@ -1,0 +1,57 @@
+Note: hackathon compliance became irrelevant
+
+### Short AWS recommendation
+
+  Keep Cloudflare for static assets, DNS, WAF, and edge routing. Move backend logic into a containerized AWS service:
+
+  Browser
+    → Cloudflare Worker
+    → API Gateway or ALB
+    → ECS Fargate service
+    → OpenAI/Gemini or Amazon Bedrock
+    → DynamoDB/Aurora + S3
+    → EventBridge/SQS + Athena
+
+  Use ECS Fargate for the repository’s current straightforward API proxy. Use Amazon Bedrock AgentCore Runtime with Strands Agents if the application evolves into a true autonomous agent.
+
+  ### Direct GCP-to-AWS counterparts
+
+   GCP                         AWS counterpart
+  ━━━━━━━━━━━━━━━━━━━━━━━━━━  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   Cloud Run                   ECS Fargate or AgentCore Runtime
+  ──────────────────────────  ──────────────────────────────────
+   GKE                         EKS
+  ──────────────────────────  ──────────────────────────────────
+   Cloud Functions             Lambda
+  ──────────────────────────  ──────────────────────────────────
+   Vertex AI                   Amazon Bedrock
+  ──────────────────────────  ──────────────────────────────────
+   Cloud SQL                   Amazon Aurora or RDS
+  ──────────────────────────  ──────────────────────────────────
+   Firestore                   DynamoDB
+  ──────────────────────────  ──────────────────────────────────
+   Cloud Storage               S3
+  ──────────────────────────  ──────────────────────────────────
+   BigQuery                    Redshift or Athena
+  ──────────────────────────  ──────────────────────────────────
+   Pub/Sub                     EventBridge, SNS, or SQS
+  ──────────────────────────  ──────────────────────────────────
+   Secret Manager              Secrets Manager
+  ──────────────────────────  ──────────────────────────────────
+   Artifact Registry           Elastic Container Registry (ECR)
+  ──────────────────────────  ──────────────────────────────────
+   Cloud Build                 CodeBuild
+  ──────────────────────────  ──────────────────────────────────
+   Cloud Monitoring/Logging    CloudWatch
+  ──────────────────────────  ──────────────────────────────────
+   Cloud Trace                 X-Ray
+  ──────────────────────────  ──────────────────────────────────
+   Cloud DNS                   Route 53
+  ──────────────────────────  ──────────────────────────────────
+   Cloud CDN                   CloudFront
+  ──────────────────────────  ──────────────────────────────────
+   Cloud Armor                 AWS WAF + Shield
+  ──────────────────────────  ──────────────────────────────────
+   IAM                         AWS IAM
+
+  For the existing response traces, migrate Cloudflare R2 to S3 only if centralized AWS storage is desired; keeping R2 is also technically reasonable.

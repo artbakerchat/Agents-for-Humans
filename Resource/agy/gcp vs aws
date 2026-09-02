@@ -1,0 +1,109 @@
+## GCP vs AWS for this repository
+
+  Based on resource/agy/bergamot.md, resource/agy/aws.md, resource/agy/devpost.md, and the current repository configuration:
+
+   Area                          GCP                                                         AWS
+  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━  
+  
+  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   Best fit                      Recommended for this project and hackathon                  Viable alternative architecture
+  ────────────────────────────  ──────────────────────────────────────────────────────────  
+  
+  ───────────────────────────────────────────────────────────
+   Hackathon compliance          Meets the requirement for Google infrastructure, Gemini,    Does not satisfy the Google Cloud infrastructure
+                                 and Google agent frameworks                                 requirement by itself
+  ────────────────────────────  ──────────────────────────────────────────────────────────  
+  
+  ───────────────────────────────────────────────────────────
+   Compute                       Cloud Run for containerized APIs; GKE for more complex      AgentCore Runtime, Lambda, ECS, or EKS
+                                 workloads
+  ────────────────────────────  ──────────────────────────────────────────────────────────  
+  
+  ───────────────────────────────────────────────────────────
+   Agent framework               Google ADK, GenAI SDK, GenKit, or Antigravity SDK           Strands Agents SDK
+  ────────────────────────────  ──────────────────────────────────────────────────────────  
+  
+  ───────────────────────────────────────────────────────────
+   AI model integration          Gemini through Vertex AI or Gemini API; OpenAI can          Bedrock and Strands; OpenAI/Gemini can still be called
+                                 remain supported                                            externally
+  ────────────────────────────  ──────────────────────────────────────────────────────────  
+  
+  ───────────────────────────────────────────────────────────
+   Database                      Cloud SQL, Firestore, or Spanner                            DynamoDB, Aurora, or RDS
+  ────────────────────────────  ──────────────────────────────────────────────────────────  
+  
+  ───────────────────────────────────────────────────────────
+   Object storage                Google Cloud Storage                                        Amazon S3
+  ────────────────────────────  ──────────────────────────────────────────────────────────  
+  
+  ───────────────────────────────────────────────────────────
+   Analytics                     BigQuery, optionally fed from Cloud Storage                 Redshift, Athena, or OpenSearch
+  ────────────────────────────  ──────────────────────────────────────────────────────────  
+  
+  ───────────────────────────────────────────────────────────
+   Secrets                       Google Secret Manager                                       AWS Secrets Manager or Parameter Store
+  ────────────────────────────  ──────────────────────────────────────────────────────────  
+  
+  ───────────────────────────────────────────────────────────
+   Existing Cloudflare Worker    Proxies requests to Cloud Run/GKE                           Proxies requests to AgentCore, Lambda, or ECS
+  ────────────────────────────  ──────────────────────────────────────────────────────────  
+  
+  ───────────────────────────────────────────────────────────
+   Current R2 trace storage      Could migrate traces from R2 to Cloud Storage               Could migrate traces from R2 to S3
+  ────────────────────────────  ──────────────────────────────────────────────────────────  
+  
+  ───────────────────────────────────────────────────────────
+   Deployment                    Cloud Build/GitHub Actions → Artifact Registry → Cloud      CodeBuild/GitHub Actions → ECR → AgentCore/ECS/Lambda
+                                 Run
+  ────────────────────────────  ──────────────────────────────────────────────────────────  
+  
+  ───────────────────────────────────────────────────────────
+   Operational complexity        Cloud Run provides a relatively direct container            AgentCore is attractive for agent workloads but
+                                 deployment path                                             introduces AWS-specific setup
+  ────────────────────────────  ──────────────────────────────────────────────────────────  
+  
+  ───────────────────────────────────────────────────────────
+   Cost profile                  Cloud Run scale-to-zero is suitable for intermittent        Lambda/AgentCore can also scale elastically;
+                                 usage; BigQuery costs depend on analytics volume            on invocation, runtime, and model usage
+  ────────────────────────────  ──────────────────────────────────────────────────────────  
+  
+  ───────────────────────────────────────────────────────────
+   Migration effort              Requires adding a backend container and moving API logic    Requires the same backend extraction plus AWS SDK, IAM,
+                                 out of the Worker                                           and deployment changes
+  ────────────────────────────  ──────────────────────────────────────────────────────────  
+  
+  ───────────────────────────────────────────────────────────
+   Strategic advantage           Strongest alignment with the documented hackathon and       Strongest if the project becomes a production agent
+                                 Gemini ecosystem                                            platform centered on Strands and AWS services
+
+  
+  ### Current repository position
+
+  The repository currently uses:
+
+  - Vite and vanilla JavaScript for the frontend
+  - A Cloudflare Worker in src/worker.js
+  - Direct OpenAI and Gemini API calls
+  - Cloudflare static assets
+  - Cloudflare R2 for optional response traces
+  - Wrangler configuration in wrangler.jsonc
+
+  Neither the GCP nor AWS backend described in agy has been implemented yet.
+
+  ### Recommendation
+
+  Use a Cloudflare + GCP architecture:
+
+  Browser
+    → Cloudflare Worker
+    → Cloud Run API
+    → Gemini/OpenAI
+    → Cloud SQL or Firestore
+    → Cloud Storage
+    → BigQuery
+
+  This preserves Cloudflare’s existing edge routing and static hosting while moving application logic, persistent data, telemetry, and analytics to
+  Google Cloud. It also directly supports the hackathon requirements in resource/agy/devpost.md.
+
+  AWS would be a reasonable second option if hackathon compliance were irrelevant, especially using Strands Agents with AgentCore. For this
+  repository’s stated goals, however, AWS would add platform migration work while weakening eligibility alignment.

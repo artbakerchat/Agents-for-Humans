@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <base href="./" />
+    <title>Advisory — Nova 2 Sonic Playground</title>
+    <link rel="stylesheet" href="./style.css" />
+  </head>
+  <body>
+    <header class="topbar">
+      <a class="brand-wrap brand-link" href="./index.html">
+        <span class="brand-dot" aria-hidden="true"></span>
+        <div>
+          <p class="eyebrow">Ferry Building Gallery</p>
+          <h1>Advisory</h1>
+        </div>
+      </a>
+      <nav class="site-nav site-nav--primary" aria-label="Primary navigation">
+        <a class="site-nav__link" href="./index.html">Workspace</a>
+        <a class="site-nav__link" href="./events.html">Events</a>
+        <a class="site-nav__link" href="./approximation.html">Approximation</a>
+        <a class="site-nav__link" href="./vision.html">Vision</a>
+        <a class="site-nav__link" href="./ABC.html">ABC</a>
+      </nav>
+      <nav class="site-nav site-nav--secondary" aria-label="Gallery sections">
+        <a class="site-nav__link" href="./poetry.html">Poetry</a>
+        <a class="site-nav__link site-nav__link--active" href="./advisory.html" aria-current="page">Advisory</a>
+        <a class="site-nav__link" href="./expressions.html">Expressions</a>
+        <a class="site-nav__link" href="./3D.html">3D</a>
+        <a class="site-nav__link" href="./portraits.html">Portraits</a>
+      </nav>
+      <div class="language-switch" aria-label="Language">
+        <a href="./advisory.html" lang="en" hreflang="en" aria-current="page">EN</a>
+        <a href="./advisory_fr.html" lang="fr" hreflang="fr">FR</a>
+      </div>
+    </header>
+
+    <main class="app">
+      <section class="intro">
+        <div>
+          <p class="eyebrow">Voice playground</p>
+          <h2>Advisory control room</h2>
+          <p class="subtitle">Join the five-person room to speak. Voice activity detection sends only short meaningful-speech windows to the Nova 2 control sidecar; audio replies are disabled.</p>
+        </div>
+      </section>
+      <div id="turnstile-widget" class="turnstile-widget" aria-label="Human verification"></div>
+    </main>
+
+    <script type="module" src="./scripts/preferences.js"></script><script type="module" src="./scripts/questions.js"></script>
+    <script type="module" src="./scripts/advisory.js"></script>
+  </body>
+</html>

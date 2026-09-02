@@ -1,0 +1,33 @@
+What it does now
+
+sets up the basic AWS Strands + Bedrock direction
+documents the architecture
+leaves the original repo untouched
+
+What’s still missing
+
+To make it a real working AWS website, you still need:
+
+a Bedrock model permission setup
+AWS IAM roles
+Lambda + API Gateway wiring
+static hosting via S3/CloudFront
+DynamoDB or Aurora config
+real app logic and auth
+Next recommended step
+
+I can continue by building the first real AWS backend in this new folder, for example:
+
+a Lambda API handler
+a Strands agent wrapper
+a Bedrock model call
+a basic local test flow
+If you want, I can do that next and make the strands folder into an actual runnable AWS backend instead of just a starter scaffold.
+
+People usually add Cloudflare to a Bedrock-backed website for specific edge features:
+
+Global CDN & Caching: If you have static assets (images, CSS, HTML) that you want served blazing fast globally before hitting your origin server.
+
+Security & DDoS Protection (WAF): Cloudflare protects your site from botnets, scraping, and volumetric DDoS attacks, which is useful if your AI endpoint is public and vulnerable to API quota draining or abuse.
+
+Cloudflare Workers: If you want to use Cloudflare's serverless edge network to host your TypeScript logic instead of a traditional server, though running Node-heavy SDKs like Strands inside a pure Cloudflare Worker can sometimes require specific configuration (since Cloudflare Workers run on V8 isolates rather than standard Node.js).

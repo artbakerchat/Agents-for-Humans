@@ -1,0 +1,82 @@
+# Codex output log
+
+Keep this file at or below 1,000 words. Each entry is timestamped using internet-sourced time.
+
+
+Entry — 2026-09-01 22:53:51 -07:00
+Reviewed Advisory access: Turnstile issues anonymous one-hour sessions; the global Durable Object groups any five queued sessions, then accepts more users into later five-person rooms. Recording and Nova routes do not require waitlist membership, and the current UI only implements admission—the actual room/WebRTC recording start is not wired yet. No fixed five-person allowlist exists.
+
+Entry — 2026-09-01 23:01:42 -07:00
+Changed Advisory to one global five-active-participant room: show active and waiting counts, queue users beyond five, promote queued users immediately when an active participant leaves, retain the room while any participant remains, connect ready users to recording, and enforce active-room membership on recording/Nova endpoints. JS syntax and git diff --check passed; npm build remains blocked because Vite is not installed.
+
+Entry — 2026-09-01 23:06:14 -07:00
+Added a server-backed waiting-list start timestamp and live elapsed timer. The timer survives page refreshes, updates every second while queued, and clears when the participant is promoted or leaves. JS syntax and git diff --check passed.
+
+Entry — 2026-09-01 23:08:25 -07:00
+Explained the current room-entry indicators: the user sees “Five participants are active. You can record now,” the count changes to active/5, the elapsed waiting timer disappears, the microphone changes to Talk, and a Leave-room button appears. Clarified that this confirms backend admission, not a shared WebRTC audio room.
+
+Entry — 2026-09-01 23:09:12 -07:00
+Explained that an active participant leaves using the visible Leave button; the browser stops local recording and sends DELETE /api/waitlist, which immediately promotes the next queued participant. Also noted that closing the tab currently does not notify the server, so automatic disconnect cleanup still needs implementation.
+
+Entry — 2026-09-01 23:12:20 -07:00
+Removed the separate active-room Leave button. Advisory now sends authenticated DELETE /api/waitlist on pagehide and stops microphone capture, so closing or navigating away removes the participant and allows immediate queue promotion. JS syntax, search, and git diff --check passed.
+
+Entry — 2026-09-01 23:16:30 -07:00
+Reviewed the request for waiting users to hear the meeting. Confirmed the repository has no WebRTC, WebSocket, SFU, or shared meeting-audio stream; current audio is private per-turn microphone input and Nova response playback. Waiting-list audio preview therefore requires live media-room infrastructure and listener-only WebRTC signaling.
+
+Entry — 2026-09-01 23:31:40 -07:00
+Corrected live audio-room infrastructure for Advisory: removed the standalone audio-room page, set the shared AudioRoom Durable Object cap to five, authenticated room WebSockets with the existing session, and integrated listener WebRTC into advisory.js. Waitlisted users hear active speakers; active users publish their recording microphone when talking. Build, syntax, Wrangler types, and git diff --check passed.
+
+Entry — 2026-09-02 00:18:20 -07:00
+Clarified and enforced room access: a valid session token is not enough; AudioRoom now checks Advisory waitlist membership. Waiting sessions join as listeners, ready sessions are the five recording speakers, and listener connections do not consume speaker capacity. Build, syntax, Wrangler types, and git diff --check passed.
+
+Entry — 2026-09-02 01:07:38 -07:00
+Changed Advisory audio targeting to 30,000 listeners: replaced browser mesh signaling with Cloudflare Realtime SFU session/track proxy routes, kept five upstream speaker seats, added SQLite-backed waitlist and realtime track registries, and added REALTIME_APP_ID/REALTIME_APP_SECRET configuration. Build, syntax, Wrangler types, and git diff --check passed.
+
+Entry — 2026-09-02 01:10:46 -07:00
+Confirmed the Advisory audio implementation uses Cloudflare Realtime SFU directly. The Worker keeps REALTIME_APP_SECRET server-side and proxies session creation, speaker publishing, listener subscription, renegotiation, and leave operations; the browser never receives the App Secret.
+
+Entry — 2026-09-02 01:14:24 -07:00
+Confirmed five promoted Advisory participants can publish simultaneously. The waitlist and SFU manifest are capped at five active speaker tracks, while each promoted browser publishes its own microphone independently; Nova turn processing remains a separate per-user flow.
+
+Entry — 2026-09-02 01:17:52 -07:00
+Explained that Nova Sonic is speech-to-speech, not a source-separation/stem-extraction model. To keep only background sound per user, duplicate each microphone track, run speech/background separation per track, then retain or mix the background stems while sending the original speech path to Nova and the live room.
+
+Entry — 2026-09-02 01:20:54 -07:00
+Clarified the required split: the five promoted participants need a raw real-time SFU audio plane, while waitlisted listeners need only the 30-second delayed processed plane. The repository lacks a speech/background processor and processed-track publisher, so implementation requires selecting or authorizing that external processing service.
+
+Entry — 2026-09-02 01:26:57 -07:00
+Wired the Advisory split: promoted users receive raw tracks; waitlisted listeners receive only the processed `demucs-mix` locator with a 30-second delay declaration. Added raw-track close handling, slower 10-second manifest polling, AWS GPU/Demucs deployment contract, and processor configuration files. Build, syntax, Wrangler types, and git diff --check passed. The media adapter still must be deployed on AWS to publish the processed track.
+
+Entry — 2026-09-02 01:32:40 -07:00
+Changed the audience path to CDN-backed HLS: only five promoted users create WebRTC sessions; waitlisted listeners receive an authorized delayed playlist URL and no SFU subscription. Added hls.js playback, PROCESSED_AUDIO_PLAYBACK_URL configuration, signed-URL guidance, and updated the AWS processor contract. Build, syntax, Wrangler types, and git diff --check passed.
+
+Entry — 2026-09-02 01:41:41 -07:00
+Audited the repository and described its frontend, Worker, Durable Objects, AWS Nova Lambda, Realtime SFU, HLS listener, Demucs processor, recording-batch, and deployment components. Identified missing runtime secrets, Cloudflare/AWS resources, CDN/HLS origin, and the unimplemented processor media adapter. Confirmed node_modules and dist exist locally, but .dev.vars is missing.
+
+Entry — 2026-09-02 07:04:26 -07:00
+Confirmed the repository used one generic Aurora PostgreSQL endpoint only in the recording batch processor. Updated the batch workflow for separate Oregon (us-west-2), Montreal (ca-central-1), and Paris (eu-west-3) Aurora clusters, writing bundle metadata to all three and locking all three before processing. Added per-region environment examples and README guidance. Syntax and git diff --check passed; actual AWS clusters, credentials, networking, and schema remain deployment requirements.
+
+Entry — 2026-09-02 07:04:26 -07:00
+Configured the recording batch job’s AWS S3 destination as lavender-responses in us-west-2, including an explicit S3_REGION setting. Documented that this AWS S3 bucket is separate from the Cloudflare R2 RESPONSE_BUCKET binding, despite sharing the bucket name. Syntax and diff checks passed.
+
+Entry — 2026-09-02 07:35:36 -07:00
+Confirmed the intended R2-to-S3 flow: the Worker stores recordings in R2, the recording batch processor reads them through R2’s S3-compatible API, bundles them, uploads to AWS S3 lavender-responses in us-west-2, and records metadata in the three Aurora clusters.
+
+Entry — 2026-09-02 07:35:36 -07:00
+Changed the recording batch processor from five-session batching to closed, UTC-aligned 30-second rolling windows. It now tracks processed R2 object keys, bundles each closed window while the live room continues, and leaves the current open window for a later scheduler run. Syntax and diff checks passed.
+
+Entry — 2026-09-02 07:40:11 -07:00
+Clarified continuous-stream behavior: closed 30-second windows are now bundled independently of room membership or participant replacement. Repeated recordings from the same participant are included because processing is keyed by R2 object key. Syntax and diff checks passed.
+
+Entry — 2026-09-02 07:43:02 -07:00
+Changed the active browser microphone capture to upload 20-second user WAV chunks while recording remains active, plus a final shorter chunk on stop. Removed duplicate full-turn user uploads; Nova still receives the full turn and assistant audio remains archived. Advisory JavaScript syntax, diff checks, and npm build passed.
+
+Entry — 2026-09-02 07:46:23 -07:00
+Removed Nova from the Advisory process: deleted the browser request and response UI, removed the Worker Nova proxy route, restricted recording intake to user audio, and removed Nova secrets from Wrangler and the environment example. Preserved live-room audio and 20-second R2 chunk uploads. Syntax checks, diff checks, and npm build passed.
+
+Entry — 2026-09-02 08:25:47 -07:00
+Added Nova 2 as an event-driven Advisory control sidecar. Client VAD sends only meaningful short speech windows; the Worker requires active-room membership, 16 kHz WAV, six-second/256 KiB limits, existing rate limiting, strict none/tool validation, and allowlisted read-only waitlist/broadcast tools. Nova audio output is omitted/discarded. Control events are structured-logged and retained in capped R2 audit records. Updated Lambda, UI, config, docs, generated types, and French/English Advisory pages. JS checks, Wrangler types, diff check, and npm build passed; dry-run binding validation passed with a sandbox-only Wrangler log-file permission warning.
+
+Entry — 2026-09-02 09:12:00 -07:00
+Created a standalone AWS-first migration scaffold under the project folder named strands. It includes an AWS Strands/Bedrock starter README, environment example, package manifest, .gitignore, and a minimal Node.js entrypoint to bootstrap the migration away from the Cloudflare Worker/OpenAI/Gemini setup. The work is intentionally isolated from the existing production app so it can evolve as a separate AWS architecture branch.

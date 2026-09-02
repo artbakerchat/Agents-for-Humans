@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <base href="./" />
+    <title>Event Post-its | Lavender</title>
+    <link rel="stylesheet" href="./style.css" />
+  </head>
+  <body>
+    <header class="topbar">
+      <a class="brand-wrap brand-link" href="./index.html" aria-label="Lavender home">
+        <span class="brand-dot" aria-hidden="true"></span>
+        <div><p class="eyebrow">Freeform planning</p><h1>Event post-its</h1></div>
+      </a>
+      <nav class="site-nav site-nav--primary" aria-label="Primary navigation">
+        <a class="site-nav__link" href="./index.html">Workspace</a>
+        <a class="site-nav__link" href="./events.html">Events</a>
+        <a class="site-nav__link site-nav__link--active" href="./approximation.html" aria-current="page">Approximation</a>
+        <a class="site-nav__link" href="./vision.html">Vision</a>
+        <a class="site-nav__link" href="./ABC.html">ABC</a>
+      </nav>
+      <nav class="site-nav site-nav--secondary" aria-label="Gallery sections">
+        <a class="site-nav__link" href="./poetry.html">Poetry</a><a class="site-nav__link" href="./advisory.html">Advisory</a><a class="site-nav__link" href="./expressions.html">Expressions</a><a class="site-nav__link" href="./3D.html">3D</a><a class="site-nav__link" href="./portraits.html">Portraits</a>
+      </nav>
+      <div class="language-switch" aria-label="Language"><a href="./approximation.html" lang="en" hreflang="en" aria-current="page">EN</a><a href="./approximation_fr.html" lang="fr" hreflang="fr">FR</a></div>
+    </header>
+
+    <main class="app postit-page">
+      <section class="postit-intro">
+        <div><p class="eyebrow">Personal planning draft</p><h2>Arrange the events your way</h2><p class="subtitle">Published events are read-only. Drag, edit, and rearrange your temporary copy here to imagine a day of exploring.</p></div>
+        <div class="postit-actions"><button id="addNote" class="send-button" type="button">＋ New post-it</button><button id="resetNotes" class="secondary-btn" type="button">Reset notes</button></div>
+      </section>
+
+      <p id="boardStatus" class="board-status" role="status">Loading events…</p>
+      <section id="board" class="postit-board" aria-label="Draggable event post-it board">
+        <div id="notes" class="postit-notes"></div>
+      </section>
+    <p class="postit-help">Drag a note to move it. Double-tap or double-click a note to edit its title, date, time, and notes. Your draft is private to this browser tab, and never changes the administrator’s Events page. Reset notes restores the published events.</p>
+    </main>
+    <dialog id="noteEditor" class="note-editor">
+      <form id="noteForm" method="dialog">
+        <div class="note-editor__header"><div><p class="eyebrow">Edit post-it</p><h2>Event details</h2></div><button class="dialog-close" value="cancel" type="submit" aria-label="Close editor">×</button></div>
+        <label>Title<input id="editTitle" name="title" required /></label>
+        <div class="note-editor__row"><label>Date<input id="editDate" name="date" type="date" /></label><label>Time<select id="editTime" name="time"><option value="">Choose a time</option></select></label></div>
+        <label>Notes<textarea id="editNotes" name="notes" rows="4" placeholder="Add a location, reminder, or extra context"></textarea></label>
+        <div class="note-editor__actions"><button class="secondary-btn" value="cancel" type="submit">Cancel</button><button id="clearEditor" class="secondary-btn" type="button">Clear</button><button class="send-button" value="save" type="submit">Save</button></div>
+      </form>
+    </dialog>
+    <script type="module" src="./scripts/preferences.js"></script><script type="module" src="./scripts/questions.js"></script><script type="module" src="./scripts/approximation.js"></script>
+  </body>
+</html>

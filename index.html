@@ -1,0 +1,121 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <base href="./" />
+    <title>Compare Responses</title>
+    <link rel="stylesheet" href="./style.css" />
+  </head>
+  <body>
+    <header id="topbar" class="topbar">
+      <div class="brand-wrap">
+        <span class="brand-dot" aria-hidden="true"></span>
+        <div>
+          <p class="eyebrow">Text workspace</p>
+          <h1>Compare responses</h1>
+        </div>
+      </div>
+      <nav class="site-nav site-nav--primary" aria-label="Primary navigation">
+        <a class="site-nav__link site-nav__link--active" href="./index.html" aria-current="page">Workspace</a>
+        <a class="site-nav__link" href="./events.html">Events</a>
+        <a class="site-nav__link" href="./approximation.html">Approximation</a>
+        <a class="site-nav__link" href="./vision.html">Vision</a>
+        <a class="site-nav__link" href="./ABC.html">ABC</a>
+      </nav>
+      <nav class="site-nav site-nav--secondary" aria-label="Gallery sections">
+        <a class="site-nav__link" href="./poetry.html">poetry</a>
+        <a class="site-nav__link" href="./advisory.html">advisory</a>
+        <a class="site-nav__link" href="./expressions.html">expressions</a>
+        <a class="site-nav__link" href="./3D.html">3D</a>
+        <a class="site-nav__link" href="./portraits.html">portraits</a>
+      </nav>
+      <div class="language-switch" aria-label="Language"><a href="./index.html" lang="en" hreflang="en" aria-current="page">EN</a><a href="./index_fr.html" lang="fr" hreflang="fr">FR</a></div>
+    </header>
+    <main id="workspace" class="app">
+      <div class="intro">
+        <div>
+          <p class="eyebrow">Side-by-side evaluation</p>
+          <p class="subtitle">Type once, then compare models in a focused workspace.</p>
+        </div>
+      </div>
+
+      <form id="promptForm" class="composer" aria-label="Prompt composer">
+        <div class="prompt-label-row">
+          <label for="promptInput">Your prompt</label>
+          <div class="prompt-speech-controls" aria-label="Read your prompt aloud">
+            <select id="promptSpeechLanguage" aria-label="Prompt speech language">
+              <option value="en-US">English</option>
+              <option value="fr-FR">French</option>
+            </select>
+            <button id="readPrompt" class="secondary-btn" type="button" disabled>▶ Read aloud</button>
+          </div>
+        </div>
+        <textarea id="promptInput" rows="4" placeholder="Type a question…"></textarea>
+        <p class="composer-hint">Responses are simple and concise by default.</p>
+        <div class="composer-footer">
+          <div class="actions">
+            <button id="sendBtn" type="submit" class="send-button">Send to both models</button>
+          </div>
+        </div>
+      </form>
+
+      <div class="model-grid">
+        <section class="model-panel model-panel--a" aria-label="Model A response">
+          <div class="panel-heading">
+            <div>
+              <p class="model-label">Response 01</p>
+              <h2>Model A</h2>
+            </div>
+            <span class="model-badge">A</span>
+          </div>
+          <p class="provider-label">Provider <span id="modelNameA" class="model-name">OpenAI · gpt-5.6-luna</span></p>
+          <p id="statusA" aria-live="polite">Model A: Idle</p>
+          <pre id="responseA" class="response" aria-live="polite"></pre>
+          <div class="response-actions">
+            <button id="playA" class="secondary-btn" type="button" disabled>▶ Play response</button>
+            <button id="copyA" class="secondary-btn" type="button" disabled>Copy response</button>
+          </div>
+        </section>
+
+        <section class="model-panel model-panel--b" aria-label="Model B response">
+          <div class="panel-heading">
+            <div>
+              <p class="model-label">Response 02</p>
+              <h2>Model B</h2>
+            </div>
+            <span class="model-badge">B</span>
+          </div>
+          <p class="provider-label">Provider <span id="modelNameB" class="model-name">Gemini · gemini-3.1-flash-lite</span></p>
+          <p id="statusB" aria-live="polite">Model B: Idle</p>
+          <pre id="responseB" class="response" aria-live="polite"></pre>
+          <div class="response-actions">
+            <button id="playB" class="secondary-btn" type="button" disabled>▶ Play response</button>
+            <button id="copyB" class="secondary-btn" type="button" disabled>Copy response</button>
+          </div>
+        </section>
+      </div>
+
+      <section class="pinball-section" aria-labelledby="pinballTitle">
+        <div class="pinball-heading">
+          <div>
+            <p class="eyebrow">A little extra text</p>
+            <h2 id="pinballTitle">Model pinball</h2>
+            <p class="subtitle">Tap the robot power to keep the balls moving.</p>
+          </div>
+        </div>
+        <div id="pinballBoard" class="pinball-board" tabindex="0" aria-label="Interactive model pinball board">
+          <div class="pinball-postit pinball-postit--mint">MODEL A</div>
+          <div class="pinball-postit pinball-postit--yellow">MODEL B</div>
+          <div class="pinball-bumper pinball-bumper--one">✦</div>
+          <div class="pinball-bumper pinball-bumper--two">+</div>
+          <div id="pinballBall" class="pinball-ball" aria-hidden="true"></div>
+          <button class="robot-arm robot-arm--left" type="button" data-flipper="left" aria-label="Activate left robot arm"><span class="robot-eye"></span><span class="robot-eye"></span><i></i></button>
+          <button class="robot-arm robot-arm--right" type="button" data-flipper="right" aria-label="Activate right robot arm"><span class="robot-eye"></span><span class="robot-eye"></span><i></i></button>
+        </div>
+        <p id="pinballStatus" class="pinball-status" role="status">Ready to play.</p>
+      </section>
+    </main>
+    <script type="module" src="./scripts/preferences.js"></script><script type="module" src="./scripts/questions.js"></script><script type="module" src="./scripts/app.js"></script><script type="module" src="./scripts/pinball.js"></script>
+  </body>
+ </html>

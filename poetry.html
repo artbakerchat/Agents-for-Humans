@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <base href="./" />
+    <title>Poetry | Ferry Building Gallery</title>
+    <link rel="stylesheet" href="./style.css" />
+  </head>
+  <body>
+    <header class="topbar">
+      <a class="brand-wrap brand-link" href="./index.html" aria-label="Ferry Building Gallery home"><span class="brand-dot" aria-hidden="true"></span><div><p class="eyebrow">Ferry Building Gallery</p><h1>Poetry</h1></div></a>
+      <nav class="site-nav site-nav--primary" aria-label="Primary navigation"><a class="site-nav__link" href="./index.html">Workspace</a><a class="site-nav__link" href="./events.html">Events</a><a class="site-nav__link" href="./approximation.html">Approximation</a><a class="site-nav__link" href="./vision.html">Vision</a><a class="site-nav__link" href="./ABC.html">ABC</a></nav>
+      <nav class="site-nav site-nav--secondary" aria-label="Gallery sections"><a class="site-nav__link site-nav__link--active" href="./poetry.html" aria-current="page">Poetry</a><a class="site-nav__link" href="./advisory.html">Advisory</a><a class="site-nav__link" href="./expressions.html">Expressions</a><a class="site-nav__link" href="./3D.html">3D</a><a class="site-nav__link" href="./portraits.html">Portraits</a></nav>
+      <div class="language-switch" aria-label="Language"><a href="./poetry.html" lang="en" hreflang="en" aria-current="page">EN</a><a href="./poetry_fr.html" lang="fr" hreflang="fr">FR</a></div>
+    </header>
+    <main class="app">
+      <section class="intro">
+        <div><p class="eyebrow">Gallery section</p><h2>Poetry</h2><p class="subtitle">A space for words, rhythm, and the imaginative connections between art and language. Generate a random poem while I work on my checklist.</p></div>
+      </section>
+
+      <section class="member-card" aria-labelledby="member-card-title">
+        <div class="member-card__intro">
+          <p class="eyebrow">Care planning card</p>
+          <h3 id="member-card-title">Member information</h3>
+          <p>Choose the details that apply, then ask the local agent for a concise support summary.</p>
+        </div>
+        <form id="memberForm" class="member-form">
+          <fieldset>
+            <legend>Member Info</legend>
+            <label><input type="checkbox" name="memberInfo" value="Name" /> Name</label>
+            <label><input type="checkbox" name="memberInfo" value="Contact" /> Contact</label>
+            <label><input type="checkbox" name="memberInfo" value="Emergency contact" /> Emergency contact</label>
+          </fieldset>
+          <fieldset>
+            <legend>Activities</legend>
+            <p class="member-form__label">Meal Plan</p>
+            <label><input type="checkbox" name="activities" value="Breakfast" /> Breakfast</label>
+            <label><input type="checkbox" name="activities" value="Lunch" /> Lunch</label>
+            <label><input type="checkbox" name="activities" value="Dinner" /> Dinner</label>
+            <p class="member-form__label">Art</p>
+            <label><input type="checkbox" name="activities" value="Drawing" /> Drawing</label>
+            <label><input type="checkbox" name="activities" value="Painting" /> Painting</label>
+            <p class="member-form__label">Woodworking</p>
+            <label><input type="checkbox" name="activities" value="Woodworking: Interested" /> Interested</label>
+            <p class="member-form__label">Games</p>
+            <label><input type="checkbox" name="activities" value="Pinball" /> Pinball</label>
+            <label><input type="checkbox" name="activities" value="Board games" /> Board games</label>
+          </fieldset>
+          <fieldset>
+            <legend>Support Needs</legend>
+            <label><input type="checkbox" name="supportNeeds" value="Mobility" /> Mobility</label>
+            <label><input type="checkbox" name="supportNeeds" value="Cognitive" /> Cognitive</label>
+            <label><input type="checkbox" name="supportNeeds" value="Communication" /> Communication</label>
+          </fieldset>
+          <fieldset>
+            <legend>Music</legend>
+            <label><input type="checkbox" name="music" value="Boby Dylan" /> Boby Dylan</label>
+          </fieldset>
+          <fieldset>
+            <legend>At-Home Options</legend>
+            <label><input type="checkbox" name="atHomeOptions" value="Meal delivery" /> Meal delivery</label>
+            <label><input type="checkbox" name="atHomeOptions" value="Activity kits" /> Activity kits</label>
+            <label><input type="checkbox" name="atHomeOptions" value="Virtual check-ins" /> Virtual check-ins</label>
+            <label><input type="checkbox" name="atHomeOptions" value="Gift shop" /> Gift shop</label>
+          </fieldset>
+          <label class="member-form__notes" for="memberNotes">Notes</label>
+          <textarea id="memberNotes" name="notes" rows="3" placeholder="Add notes for the agent..."></textarea>
+          <div class="member-card__actions">
+            <button id="sendMemberBtn" type="submit">Send to both models</button>
+            <span id="memberStatus" class="member-card__status" role="status">Select details, then send the checklist to both models.</span>
+          </div>
+        </form>
+      </section>
+
+      <div class="model-grid">
+        <section class="model-panel model-panel--a" aria-label="Model A response">
+          <div class="panel-heading">
+            <div><p class="model-label">Response 01</p><h2>Model A</h2></div>
+            <span class="model-badge">A</span>
+          </div>
+          <p class="provider-label">Provider <span class="model-name">OpenAI</span></p>
+          <p id="statusA" aria-live="polite">Model A: Idle</p>
+          <pre id="responseA" class="response" aria-live="polite"></pre>
+        </section>
+        <section class="model-panel model-panel--b" aria-label="Model B response">
+          <div class="panel-heading">
+            <div><p class="model-label">Response 02</p><h2>Model B</h2></div>
+            <span class="model-badge">B</span>
+          </div>
+          <p class="provider-label">Provider <span class="model-name">Gemini</span></p>
+          <p id="statusB" aria-live="polite">Model B: Idle</p>
+          <pre id="responseB" class="response" aria-live="polite"></pre>
+        </section>
+      </div>
+    </main>
+    <script type="module" src="./scripts/preferences.js"></script><script type="module" src="./scripts/questions.js"></script>
+    <script type="module" src="./scripts/poetry.js"></script>
+  </body>
+</html>
