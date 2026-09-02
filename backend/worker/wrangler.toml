@@ -1,0 +1,10 @@
+name = "agents-for-humans-gateway"
+main = "src/index.ts"
+compatibility_date = "2026-09-02"
+
+[vars]
+# Set this to the deployed API Gateway URL.
+API_GATEWAY_URL = "https://replace-me.execute-api.us-east-1.amazonaws.com"
+
+[secrets]
+required = ["APP_AUTH_TOKEN"]
