@@ -1,6 +1,7 @@
 interface Env {
   API_GATEWAY_URL: string;
   APP_AUTH_TOKEN: string;
+  [key: string]: string;
 }
 
 const corsHeaders = {
