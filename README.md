@@ -1,5 +1,5 @@
 # Agents-for-Humans
-Deploying with AgentCore is a smart architectural choice and will strengthen your Implementation score.
+Everyday, maybe Day 1 and Day 2, people are struggling to complete repetitive tasks like printing bills, scheduling a hygiene, or filling out the checklist again. On their own they're minor, but together they drain real time and attention. Agents for Humans take care of your last year tasks for now.
 
 ## Articles
 https://builder.aws.com/content/3Ibk3sjdeaROv4MknrRRZWqSxhU/agents-for-humans
