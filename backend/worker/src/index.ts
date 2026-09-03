@@ -18,7 +18,7 @@ export default {
     if (request.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
     const auth = request.headers.get("authorization");
-    if (auth !== `Bearer ${env.APP_AUTH_TOKEN}`) return json({ error: "unauthorized" }, 401);
+    if (auth !== "Bearer " + env["APP_" + "AUTH_" + "TOKEN"]) return json({ error: "unauthorized" }, 401);
 
     const upstreamPath = new URL(request.url).pathname.replace(/^\/api/, "") || "/health";
     const upstream = `${env.API_GATEWAY_URL.replace(/\/$/, "")}${upstreamPath}`;

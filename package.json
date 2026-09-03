@@ -5,6 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "dev:cloudflare": "node scripts/dev-cloudflare.mjs",
     "build": "vite build",
     "preview": "vite preview"
   },
