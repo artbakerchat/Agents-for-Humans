@@ -2,7 +2,7 @@ const scratchText = document.querySelector('#scratchText');
 const chooseOneButton = document.querySelector('#chooseOne');
 const boxMessages = document.querySelector('#boxMessages');
 const boxes = [...document.querySelectorAll('.mystery-box')];
-const messageSources = Object.values(import.meta.glob('../resource/box/*.md', {
+const messageSources = Object.values(import.meta.glob('../Resource/box/*.md', {
   query: '?raw',
   import: 'default',
   eager: true,
