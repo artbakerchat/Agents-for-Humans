@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <base href="./" />
+    <title>Printer</title>
+    <link rel="stylesheet" href="./style.css" />
+    <style>
+      body.printer-body {
+        margin: 0;
+        min-height: 100vh;
+        display: grid;
+        place-items: center;
+        background: #6b7280;
+        padding: 2rem 1rem;
+      }
+      .printer-page {
+        width: 210mm;
+        min-height: 297mm;
+        max-width: 100%;
+        background: #fff;
+        box-shadow: 0 1rem 2.5rem rgba(0, 0, 0, 0.35);
+        padding: 25mm 20mm;
+        box-sizing: border-box;
+      }
+      .printer-page[contenteditable="true"] {
+        outline: none;
+        font-family: "Georgia", "Times New Roman", serif;
+        font-size: 12pt;
+        line-height: 1.6;
+        color: #1a1a1a;
+      }
+      @media print {
+        body.printer-body { background: none; padding: 0; }
+        .printer-page { box-shadow: none; width: auto; min-height: auto; padding: 0; }
+      }
+    </style>
+  </head>
+  <body class="printer-body">
+    <div class="printer-page" contenteditable="true" spellcheck="true" aria-label="A4 page, click to type"></div>
+  </body>
+</html>
