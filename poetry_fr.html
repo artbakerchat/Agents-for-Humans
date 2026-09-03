@@ -1,9 +1,38 @@
 <!doctype html>
 <html lang="fr">
-  <head><meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" /><base href="./" /><title>Poésie | Ferry Building Gallery</title><link rel="stylesheet" href="./style.css" /></head>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <base href="./" />
+    <title>Poésie | Ferry Building Gallery</title>
+    <link rel="stylesheet" href="./style.css" />
+  </head>
   <body>
-    <header class="topbar"><a class="brand-wrap brand-link" href="./index_fr.html" aria-label="Accueil de la Ferry Building Gallery"><span class="brand-dot" aria-hidden="true"></span><div><p class="eyebrow">Ferry Building Gallery</p><h1>Poésie</h1></div></a><nav class="site-nav site-nav--primary" aria-label="Navigation principale"><a class="site-nav__link" href="./index_fr.html">Portraits</a><a class="site-nav__link" href="./events_fr.html">Événements</a><a class="site-nav__link" href="./approximation_fr.html">Approximation</a><a class="site-nav__link" href="./vision_fr.html">Vision</a><a class="site-nav__link" href="./ABC_fr.html">ABC</a></nav><nav class="site-nav site-nav--secondary" aria-label="Sections de la galerie"><a class="site-nav__link site-nav__link--active" href="./poetry_fr.html" aria-current="page">Poésie</a><a class="site-nav__link" href="./advisory_fr.html">Conseil</a><a class="site-nav__link" href="./expressions_fr.html">Expressions</a><a class="site-nav__link" href="./3D_fr.html">3D</a><a class="site-nav__link" href="./index_fr.html">Portraits</a></nav><div class="language-switch" aria-label="Langue"><a href="./poetry.html" lang="en" hreflang="en">EN</a><a href="./poetry_fr.html" lang="fr" hreflang="fr" aria-current="page">FR</a></div></header>
-    <main class="app"><section class="intro"><div><p class="eyebrow">Section de la galerie</p><h2>Poésie</h2><p class="subtitle">Un espace pour les mots, le rythme et les liens imaginatifs entre l’art et le langage. Générez un poème aléatoire pendant que je travaille sur ma liste de contrôle.</p></div></section></main>
+    <header class="topbar">
+      <a class="brand-wrap brand-link" href="./index_fr.html" aria-label="Accueil de la Ferry Building Gallery"><span class="brand-dot" aria-hidden="true"></span><div><p class="eyebrow">Ferry Building Gallery</p><h1>Poésie</h1></div></a>
+      <nav class="site-nav site-nav--primary" aria-label="Navigation principale"><a class="site-nav__link" href="./index_fr.html">Dental</a><a class="site-nav__link" href="./events_fr.html">Événements</a><a class="site-nav__link" href="./approximation_fr.html">Approximation</a><a class="site-nav__link" href="./vision_fr.html">Vision</a><a class="site-nav__link" href="./ABC_fr.html">ABC</a></nav>
+      <nav class="site-nav site-nav--secondary" aria-label="Sections de la galerie"><a class="site-nav__link site-nav__link--active" href="./poetry_fr.html" aria-current="page">Impression</a><a class="site-nav__link" href="./advisory_fr.html">Conseil</a><a class="site-nav__link" href="./expressions_fr.html">Expressions</a><a class="site-nav__link" href="./3D_fr.html">3D</a><a class="site-nav__link" href="./portraits_fr.html">Portraits</a></nav>
+      <div class="language-switch" aria-label="Langue"><a href="./poetry.html" lang="en" hreflang="en">EN</a><a href="./poetry_fr.html" lang="fr" hreflang="fr" aria-current="page">FR</a></div>
+    </header>
+    <main class="app">
+      <section class="intro"><div><p class="eyebrow">Section de la galerie</p><h2>Poésie</h2><p class="subtitle">Un espace pour les mots, le rythme et les liens imaginatifs entre l’art et le langage. Générez un poème aléatoire pendant que je travaille sur ma liste de contrôle.</p></div></section>
+      <section class="member-card" aria-labelledby="member-card-title">
+        <div class="member-card__intro"><p class="eyebrow">Fiche de planification des soins</p><h3 id="member-card-title">Informations sur le membre</h3><p>Choisissez les détails applicables, puis demandez à l’agent local un résumé concis du soutien.</p></div>
+        <form id="memberForm" class="member-form">
+          <fieldset><legend>Informations</legend><label><input type="checkbox" name="memberInfo" value="Name" /> Nom</label><label><input type="checkbox" name="memberInfo" value="Contact" /> Contact</label><label><input type="checkbox" name="memberInfo" value="Emergency contact" /> Contact d’urgence</label></fieldset>
+          <fieldset><legend>Activités</legend><p class="member-form__label">Repas</p><label><input type="checkbox" name="activities" value="Breakfast" /> Petit-déjeuner</label><label><input type="checkbox" name="activities" value="Lunch" /> Déjeuner</label><label><input type="checkbox" name="activities" value="Dinner" /> Dîner</label><p class="member-form__label">Art</p><label><input type="checkbox" name="activities" value="Drawing" /> Dessin</label><label><input type="checkbox" name="activities" value="Painting" /> Peinture</label><p class="member-form__label">Travail du bois</p><label><input type="checkbox" name="activities" value="Woodworking: Interested" /> Intéressé</label><p class="member-form__label">Jeux</p><label><input type="checkbox" name="activities" value="Pinball" /> Flipper</label><label><input type="checkbox" name="activities" value="Board games" /> Jeux de société</label></fieldset>
+          <fieldset><legend>Besoins de soutien</legend><label><input type="checkbox" name="supportNeeds" value="Mobility" /> Mobilité</label><label><input type="checkbox" name="supportNeeds" value="Cognitive" /> Cognitif</label><label><input type="checkbox" name="supportNeeds" value="Communication" /> Communication</label></fieldset>
+          <fieldset><legend>Options à domicile</legend><label><input type="checkbox" name="atHomeOptions" value="Meal delivery" /> Livraison de repas</label><label><input type="checkbox" name="atHomeOptions" value="Activity kits" /> Trousses d’activités</label><label><input type="checkbox" name="atHomeOptions" value="Virtual check-ins" /> Suivis virtuels</label><label><input type="checkbox" name="atHomeOptions" value="Gift shop" /> Boutique de cadeaux</label></fieldset>
+          <label class="member-form__notes" for="memberNotes">Notes</label><textarea id="memberNotes" name="notes" rows="3" placeholder="Ajoutez des notes pour l’agent..."></textarea>
+          <div class="member-card__actions"><button id="sendMemberBtn" type="submit">Envoyer aux deux modèles</button><span id="memberStatus" class="member-card__status" role="status">Sélectionnez les détails, puis envoyez la liste aux deux modèles.</span></div>
+        </form>
+      </section>
+      <div class="model-grid">
+        <section class="model-panel model-panel--a" aria-label="Réponse du modèle A"><div class="panel-heading"><div><p class="model-label">Réponse 01</p><h2>Modèle A</h2></div><span class="model-badge">A</span></div><p class="provider-label">Fournisseur <span class="model-name">OpenAI</span></p><p id="statusA" aria-live="polite">Modèle A : En attente</p><pre id="responseA" class="response" aria-live="polite"></pre></section>
+        <section class="model-panel model-panel--b" aria-label="Réponse du modèle B"><div class="panel-heading"><div><p class="model-label">Réponse 02</p><h2>Modèle B</h2></div><span class="model-badge">B</span></div><p class="provider-label">Fournisseur <span class="model-name">Gemini</span></p><p id="statusB" aria-live="polite">Modèle B : En attente</p><pre id="responseB" class="response" aria-live="polite"></pre></section>
+      </div>
+    </main>
     <script type="module" src="./scripts/preferences.js"></script><script type="module" src="./scripts/questions.js"></script>
+    <script type="module" src="./scripts/poetry.js"></script>
   </body>
 </html>
