@@ -1,0 +1,5 @@
+# Copy this file to .dev.vars for local Wrangler development.
+APP_AUTH_TOKEN=local-development-token
+
+# Use a deployed API Gateway, or point this at another local upstream.
+API_GATEWAY_URL=https://replace-me.execute-api.us-east-1.amazonaws.com

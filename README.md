@@ -23,6 +23,20 @@ Good Neighbor Agents are AI agents designed to serve **groups of people and comm
 
 See [Good-Neighbor-Agents.md](./Good-Neighbor-Agents.md) for detailed use cases and implementation guidance.
 
+## Local Cloudflare development
+
+Install dependencies in the repository and in `backend/worker`, then create the Worker
+development environment:
+
+```sh
+cp backend/worker/.dev.vars.example backend/worker/.dev.vars
+# Edit API_GATEWAY_URL if needed
+npm run dev:cloudflare
+```
+
+This starts Vite and Wrangler together. The frontend is available at the Vite URL and
+proxies `/api/*` requests to the local Worker at `http://127.0.0.1:8787`.
+
 
 ## Option 2: Strands + Bedrock service
 
