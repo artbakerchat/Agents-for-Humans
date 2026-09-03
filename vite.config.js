@@ -5,6 +5,11 @@ const html = (name) => resolve(process.cwd(), name);
 
 export default defineConfig({
   base: './',
+  server: {
+    proxy: {
+      '/api': 'http://127.0.0.1:8787'
+    }
+  },
   build: {
     outDir: 'dist',
     rollupOptions: {
