@@ -70,6 +70,7 @@ web_modules/
 .env.*
 !.env.example
 backend/worker/.dev.vars
+.secrets.txt
 
 # parcel-bundler cache (https://parceljs.org/)
 .cache
@@ -142,3 +143,8 @@ dist
 vite.config.js.timestamp-*
 vite.config.ts.timestamp-*
 .vite/
+
+# wrangler files
+.wrangler
+.dev.vars*
+!.dev.vars.example
