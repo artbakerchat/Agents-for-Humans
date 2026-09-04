@@ -39,6 +39,37 @@ npm run dev:cloudflare
 This starts Vite and Wrangler together. The frontend is available at the Vite URL and
 proxies `/api/*` requests to the local Worker at `http://127.0.0.1:8787`.
 
+## Cloudflare Pages deployment
+
+The frontend is a static Cloudflare Pages site. In the Pages project settings, set:
+
+```text
+Build command: npm run build
+Build output directory: dist
+Root directory: /
+```
+
+Add the deployed gateway Worker URL as the `VITE_API_BASE_URL` environment variable
+for the production and preview environments. The frontend sends its `/api/*`
+requests to that URL; Pages does not proxy those requests automatically because this
+site has no Pages Functions. Deploy the gateway Worker separately as described in
+[backend/option-2.md](./backend/option-2.md).
+
+The Pages deployment can be tested locally with:
+
+```sh
+npm run preview
+```
+
+Deploy from the repository with:
+
+```sh
+npm run deploy
+```
+
+The API gateway is a separate Cloudflare Worker in `backend/worker`, configured and
+deployed independently from the Pages frontend.
+
 
 ## Option 2: Strands + Bedrock service
 
