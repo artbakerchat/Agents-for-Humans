@@ -1,6 +1,13 @@
 {
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "agents-for-humans",
+  "main": "worker/index.js",
   "compatibility_date": "2026-08-31",
-  "pages_build_output_dir": "./dist"
+  "assets": {
+    "directory": "./dist",
+    "binding": "ASSETS"
+  },
+  "vars": {
+    "API_WORKER_URL": "https://replace-me.workers.dev"
+  }
 }

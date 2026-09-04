@@ -7,8 +7,8 @@
     "dev": "vite",
     "dev:cloudflare": "node scripts/dev-cloudflare.mjs",
     "build": "vite build",
-    "preview": "npm run build && wrangler pages dev dist",
-    "deploy": "npm run build && wrangler pages deploy dist"
+    "preview": "npm run build && wrangler dev",
+    "deploy": "npm run build && wrangler deploy"
   },
   "devDependencies": {
     "vite": "^6.1.0",
