@@ -1,4 +1,4 @@
-name = "agents-for-humans"
+name = "agents-for-humans-api"
 main = "src/index.ts"
 compatibility_date = "2026-09-02"
 
