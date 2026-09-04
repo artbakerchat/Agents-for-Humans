@@ -8,6 +8,12 @@ Globals:
     MemorySize: 1024
     Runtime: nodejs22.x
 
+Parameters:
+  AppAuthToken:
+    Type: String
+    NoEcho: true
+    Description: Shared secret accepted only from the Cloudflare Worker.
+
 Resources:
   StrandsAgentFunction:
     Type: AWS::Serverless::Function
@@ -17,6 +23,7 @@ Resources:
       Environment:
         Variables:
           BEDROCK_MODEL_ID: us.amazon.nova-lite-v1:0
+          APP_AUTH_TOKEN: !Ref AppAuthToken
       Policies:
         - Statement:
             - Effect: Allow

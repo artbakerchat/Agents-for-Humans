@@ -8,6 +8,7 @@ type ModelRequest = {
 
 const region = process.env.AWS_REGION ?? "us-east-1";
 const modelId = process.env.BEDROCK_MODEL_ID ?? "us.amazon.nova-lite-v1:0";
+const appAuthToken = process.env.APP_AUTH_TOKEN;
 
 function response(statusCode: number, body: unknown): APIGatewayProxyResultV2 {
   return {
@@ -20,6 +21,10 @@ function response(statusCode: number, body: unknown): APIGatewayProxyResultV2 {
 export async function handler(
   event: APIGatewayProxyEventV2,
 ): Promise<APIGatewayProxyResultV2> {
+  if (!appAuthToken || event.headers?.authorization !== `Bearer ${appAuthToken}`) {
+    return response(401, { error: "unauthorized" });
+  }
+
   if (event.requestContext.http.method === "GET" && event.rawPath === "/health") {
     return response(200, { status: "ok", service: "strands-bedrock-lambda", region, modelId });
   }
