@@ -1,0 +1,310 @@
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<title>Free Chair — Library Spin</title>
+		<style>
+			:root {
+				color: #182236;
+				background: #eef2f7;
+				font-family: Arial, sans-serif;
+			}
+
+			* { box-sizing: border-box; }
+
+			body { margin: 0; padding: 2rem; }
+
+			.free-chair-container {
+				width: min(48rem, 100%);
+				margin: 0 auto;
+				padding: 1.5rem;
+				border: 1px solid #ccd5e2;
+				border-radius: 0.5rem;
+				background: #fff;
+			}
+
+			.free-chair-header {
+				display: flex;
+				align-items: baseline;
+				justify-content: space-between;
+				gap: 1rem;
+				margin-bottom: 1rem;
+			}
+
+			.free-chair-header h1 {
+				margin: 0;
+				font-size: 1.4rem;
+			}
+
+			.free-chair-header p {
+				margin: 0;
+				color: #53627a;
+				font-size: 0.9rem;
+			}
+
+			.library-room {
+				position: relative;
+				width: 100%;
+				height: 30rem;
+				border: 1px solid #ccd5e2;
+				border-radius: 0.5rem;
+				background:
+					repeating-linear-gradient(
+						0deg,
+						transparent,
+						transparent 4.9rem,
+						#e3e9f2 4.9rem,
+						#e3e9f2 5rem
+					),
+					linear-gradient(#f7f9fc, #eef2f7);
+				overflow: hidden;
+				touch-action: none;
+				user-select: none;
+			}
+
+			.library-bookshelf {
+				position: absolute;
+				display: grid;
+				grid-template-columns: repeat(4, 1fr);
+				gap: 0.2rem;
+				width: 7rem;
+				padding: 0.4rem;
+				border: 1px solid #53627a;
+				border-radius: 0.25rem;
+				background: #d9e0ec;
+			}
+
+			.library-bookshelf span {
+				display: block;
+				height: 1.2rem;
+				border-radius: 0.1rem;
+			}
+
+			.library-bookshelf span:nth-child(4n + 1) { background: #e0a32e; }
+			.library-bookshelf span:nth-child(4n + 2) { background: #53627a; }
+			.library-bookshelf span:nth-child(4n + 3) { background: #a35b5b; }
+			.library-bookshelf span:nth-child(4n + 4) { background: #4a7a5b; }
+
+			.library-rug {
+				position: absolute;
+				left: 50%;
+				bottom: 2rem;
+				width: 16rem;
+				height: 6rem;
+				border: 1px dashed #53627a;
+				border-radius: 50%;
+				background: rgba(224, 163, 46, 0.12);
+				transform: translateX(-50%);
+			}
+
+			.free-chair {
+				position: absolute;
+				left: 50%;
+				top: 55%;
+				display: grid;
+				width: 5rem;
+				height: 5rem;
+				place-items: center;
+				border: 2px solid #182236;
+				border-radius: 50%;
+				background: #fff;
+				box-shadow: 0 0.4rem 0.8rem rgba(24, 34, 54, 0.18);
+				cursor: grab;
+				font-size: 2.2rem;
+				will-change: transform;
+			}
+
+			.free-chair:active { cursor: grabbing; }
+
+			.free-chair.is-spinning {
+				border-color: #e0a32e;
+				box-shadow: 0 0.4rem 1.2rem rgba(224, 163, 46, 0.5);
+			}
+
+			.free-chair-toolbar {
+				display: flex;
+				flex-wrap: wrap;
+				align-items: center;
+				gap: 0.75rem;
+				margin-top: 1rem;
+			}
+
+			.free-chair-btn {
+				padding: 0.6rem 1.2rem;
+				border: 1px solid #53627a;
+				border-radius: 0.5rem;
+				background: #182236;
+				color: #fff;
+				font: inherit;
+				font-weight: bold;
+				cursor: pointer;
+			}
+
+			.free-chair-btn:hover { background: #2b3553; }
+
+			.free-chair-btn.secondary {
+				background: #fff;
+				color: #182236;
+			}
+
+			.free-chair-btn.secondary:hover { background: #eef2f7; }
+
+			.free-chair-hint {
+				margin: 1rem 0 0;
+				padding: 1rem;
+				border: 1px dashed #53627a;
+				border-radius: 0.5rem;
+				color: #53627a;
+				font-size: 0.9rem;
+				text-align: center;
+			}
+		</style>
+	</head>
+	<body>
+		<main class="free-chair-container">
+			<header class="free-chair-header">
+				<h1>🪑 Free Chair</h1>
+				<p>A baby can spin and move it around the library.</p>
+			</header>
+
+			<section class="library-room" id="room" aria-label="Library room">
+				<div class="library-bookshelf" style="top: 1rem; left: 1rem;">
+					<span></span><span></span><span></span><span></span>
+					<span></span><span></span><span></span><span></span>
+				</div>
+				<div class="library-bookshelf" style="top: 1rem; right: 1rem;">
+					<span></span><span></span><span></span><span></span>
+					<span></span><span></span><span></span><span></span>
+				</div>
+				<div class="library-bookshelf" style="bottom: 1rem; left: 1rem;">
+					<span></span><span></span><span></span><span></span>
+					<span></span><span></span><span></span><span></span>
+				</div>
+				<div class="library-bookshelf" style="bottom: 1rem; right: 1rem;">
+					<span></span><span></span><span></span><span></span>
+					<span></span><span></span><span></span><span></span>
+				</div>
+				<div class="library-rug"></div>
+				<div class="free-chair" id="chair" role="button" tabindex="0" aria-label="Spinning chair — drag to move, arrow keys also work">🪑</div>
+			</section>
+
+			<div class="free-chair-toolbar">
+				<button class="free-chair-btn" id="spinBtn" type="button">🌀 Spin!</button>
+				<button class="free-chair-btn secondary" id="resetBtn" type="button">↩ Back to rug</button>
+			</div>
+
+			<p class="free-chair-hint">
+				Drag the chair anywhere in the library, press <strong>Spin!</strong> (or double-click the chair)
+				to twirl. Arrow keys nudge it around too. Shhh… baby librarian at play. 🤫
+			</p>
+		</main>
+
+		<script>
+			const room = document.getElementById('room');
+			const chair = document.getElementById('chair');
+			const spinBtn = document.getElementById('spinBtn');
+			const resetBtn = document.getElementById('resetBtn');
+
+			const CHAIR_SIZE = 80; // 5rem at 16px base
+			let posX = 0;
+			let posY = 0;
+			let rotation = 0;
+			let spinning = false;
+			let spinFrame = null;
+			let spinVelocity = 0;
+
+			function clampToRoom() {
+				const maxX = room.clientWidth / 2 - CHAIR_SIZE / 2;
+				const maxY = room.clientHeight / 2 - CHAIR_SIZE / 2;
+				posX = Math.max(-maxX, Math.min(maxX, posX));
+				posY = Math.max(-maxY, Math.min(maxY, posY));
+			}
+
+			function render() {
+				clampToRoom();
+				chair.style.transform = `translate(calc(-50% + ${posX}px), calc(-50% + ${posY}px)) rotate(${rotation}deg)`;
+			}
+
+			function spinLoop() {
+				rotation = (rotation + spinVelocity) % 360;
+				spinVelocity *= 0.985; // friction slows the twirl
+				if (Math.abs(spinVelocity) < 0.3) {
+					spinning = false;
+					chair.classList.remove('is-spinning');
+					render();
+					return;
+				}
+				render();
+				spinFrame = requestAnimationFrame(spinLoop);
+			}
+
+			function startSpin(power = 14) {
+				if (spinning) return;
+				spinning = true;
+				spinVelocity = power;
+				chair.classList.add('is-spinning');
+				spinFrame = requestAnimationFrame(spinLoop);
+			}
+
+			// Drag to move (pointer events cover mouse + baby fingers)
+			let dragging = false;
+			let dragOffsetX = 0;
+			let dragOffsetY = 0;
+
+			chair.addEventListener('pointerdown', (e) => {
+				dragging = true;
+				chair.setPointerCapture(e.pointerId);
+				const roomRect = room.getBoundingClientRect();
+				const centerX = roomRect.left + roomRect.width / 2;
+				const centerY = roomRect.top + roomRect.height / 2;
+				dragOffsetX = e.clientX - (centerX + posX);
+				dragOffsetY = e.clientY - (centerY + posY);
+			});
+
+			chair.addEventListener('pointermove', (e) => {
+				if (!dragging) return;
+				const roomRect = room.getBoundingClientRect();
+				posX = e.clientX - (roomRect.left + roomRect.width / 2) - dragOffsetX;
+				posY = e.clientY - (roomRect.top + roomRect.height / 2) - dragOffsetY;
+				render();
+			});
+
+			chair.addEventListener('pointerup', () => { dragging = false; });
+			chair.addEventListener('pointercancel', () => { dragging = false; });
+
+			// Double-click / double-tap to spin in place
+			chair.addEventListener('dblclick', () => startSpin());
+
+			// Arrow keys nudge the chair, spacebar spins
+			chair.addEventListener('keydown', (e) => {
+				const step = 16;
+				if (e.key === 'ArrowLeft') posX -= step;
+				else if (e.key === 'ArrowRight') posX += step;
+				else if (e.key === 'ArrowUp') posY -= step;
+				else if (e.key === 'ArrowDown') posY += step;
+				else if (e.key === ' ') { startSpin(); e.preventDefault(); return; }
+				else return;
+				e.preventDefault();
+				render();
+			});
+
+			spinBtn.addEventListener('click', () => startSpin());
+
+			resetBtn.addEventListener('click', () => {
+				posX = 0;
+				posY = 0;
+				rotation = 0;
+				if (spinning) {
+					cancelAnimationFrame(spinFrame);
+					spinning = false;
+					chair.classList.remove('is-spinning');
+				}
+				render();
+			});
+
+			window.addEventListener('resize', render);
+			render();
+		</script>
+	</body>
+</html>

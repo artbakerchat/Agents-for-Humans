@@ -1,0 +1,393 @@
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<title>Shout Space — Drum Player</title>
+		<style>
+			:root {
+				color: #182236;
+				background: #eef2f7;
+				font-family: Arial, sans-serif;
+			}
+
+			* { box-sizing: border-box; }
+
+			body { margin: 0; padding: 2rem; }
+
+			.music-player-container {
+				width: min(48rem, 100%);
+				margin: 0 auto;
+				padding: 1.5rem;
+				border: 1px solid #ccd5e2;
+				border-radius: 0.5rem;
+				background: #fff;
+			}
+
+			.music-player-header {
+				display: flex;
+				align-items: baseline;
+				justify-content: space-between;
+				gap: 1rem;
+				margin-bottom: 1rem;
+			}
+
+			.music-player-header h1 {
+				margin: 0;
+				font-size: 1.4rem;
+			}
+
+			.music-player-header p {
+				margin: 0;
+				color: #53627a;
+				font-size: 0.9rem;
+			}
+
+			.music-transport {
+				display: flex;
+				flex-wrap: wrap;
+				align-items: center;
+				gap: 1rem;
+				padding: 1rem;
+				border: 1px solid #ccd5e2;
+				border-radius: 0.5rem;
+				background: #f7f9fc;
+			}
+
+			.music-play-btn {
+				width: 3.5rem;
+				height: 3.5rem;
+				border: none;
+				border-radius: 50%;
+				background: #182236;
+				color: #fff;
+				font-size: 1.3rem;
+				cursor: pointer;
+			}
+
+			.music-play-btn:hover { background: #2b3553; }
+
+			.music-control {
+				display: grid;
+				gap: 0.25rem;
+				color: #53627a;
+				font-size: 0.8rem;
+			}
+
+			.music-control output {
+				color: #182236;
+				font-weight: bold;
+			}
+
+			.music-control input[type="range"] { width: 8rem; }
+
+			.drum-pads {
+				display: grid;
+				grid-template-columns: repeat(4, 1fr);
+				gap: 0.75rem;
+				margin-top: 1rem;
+			}
+
+			.drum-pad {
+				padding: 1.5rem 0.5rem;
+				border: 1px solid #53627a;
+				border-radius: 0.5rem;
+				background: #fff;
+				color: #182236;
+				font: inherit;
+				font-weight: bold;
+				cursor: pointer;
+				transition: transform 0.05s, background 0.1s;
+			}
+
+			.drum-pad:hover { background: #eef2f7; }
+
+			.drum-pad.is-hit {
+				background: #182236;
+				color: #fff;
+				transform: scale(0.96);
+			}
+
+			.drum-sequencer {
+				display: grid;
+				gap: 0.4rem;
+				margin-top: 1.5rem;
+			}
+
+			.drum-seq-row {
+				display: grid;
+				grid-template-columns: 5rem repeat(8, 1fr);
+				align-items: center;
+				gap: 0.4rem;
+			}
+
+			.drum-seq-label {
+				color: #53627a;
+				font-size: 0.8rem;
+				font-weight: bold;
+				text-transform: uppercase;
+			}
+
+			.drum-seq-step {
+				height: 2rem;
+				border: 1px solid #ccd5e2;
+				border-radius: 0.25rem;
+				background: #f7f9fc;
+				cursor: pointer;
+			}
+
+			.drum-seq-step.is-on {
+				border-color: #182236;
+				background: #53627a;
+			}
+
+			.drum-seq-step.is-playing {
+				outline: 2px solid #e0a32e;
+				outline-offset: 1px;
+			}
+
+			.shout-box {
+				margin-top: 1.5rem;
+				padding: 1rem;
+				border: 1px dashed #53627a;
+				border-radius: 0.5rem;
+				color: #53627a;
+				text-align: center;
+			}
+
+			.shout-box strong {
+				display: block;
+				color: #182236;
+				font-size: 1.1rem;
+				letter-spacing: 0.08em;
+				text-transform: uppercase;
+			}
+		</style>
+	</head>
+	<body>
+		<main class="music-player-container">
+			<header class="music-player-header">
+				<h1>🥁 Drum Player</h1>
+				<p>This is a space where they shout.</p>
+			</header>
+
+			<section class="music-transport" aria-label="Player controls">
+				<button id="playBtn" class="music-play-btn" type="button" aria-label="Play">▶</button>
+
+				<label class="music-control">
+					Tempo <output id="tempoOut">120</output> BPM
+					<input id="tempo" type="range" min="60" max="200" value="120" />
+				</label>
+
+				<label class="music-control">
+					Volume <output id="volumeOut">80</output>%
+					<input id="volume" type="range" min="0" max="100" value="80" />
+				</label>
+			</section>
+
+			<section class="drum-pads" aria-label="Drum pads">
+				<button class="drum-pad" type="button" data-drum="kick">Kick</button>
+				<button class="drum-pad" type="button" data-drum="snare">Snare</button>
+				<button class="drum-pad" type="button" data-drum="hihat">Hi-Hat</button>
+				<button class="drum-pad" type="button" data-drum="clap">Clap</button>
+				<button class="drum-pad" type="button" data-drum="tom">Tom</button>
+				<button class="drum-pad" type="button" data-drum="rim">Rim</button>
+				<button class="drum-pad" type="button" data-drum="crash">Crash</button>
+				<button class="drum-pad" type="button" data-drum="shout">Shout!</button>
+			</section>
+
+			<section class="drum-sequencer" id="sequencer" aria-label="Step sequencer"></section>
+
+			<div class="shout-box">
+				<strong id="shoutText">Make some noise!</strong>
+				Click the pads, build a beat, press play — shout it out.
+			</div>
+		</main>
+
+		<script>
+			const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+			const masterGain = audioCtx.createGain();
+			masterGain.connect(audioCtx.destination);
+			masterGain.gain.value = 0.8;
+
+			const shouts = [
+				'MAKE SOME NOISE!',
+				'LOUDER!',
+				'FEEL THE BEAT!',
+				'SHOUT IT OUT!',
+				'BOOM BAP!',
+				'THIS IS THE SPACE!',
+			];
+
+			function playKick(time) {
+				const osc = audioCtx.createOscillator();
+				const gain = audioCtx.createGain();
+				osc.frequency.setValueAtTime(150, time);
+				osc.frequency.exponentialRampToValueAtTime(40, time + 0.12);
+				gain.gain.setValueAtTime(1, time);
+				gain.gain.exponentialRampToValueAtTime(0.001, time + 0.3);
+				osc.connect(gain).connect(masterGain);
+				osc.start(time);
+				osc.stop(time + 0.3);
+			}
+
+			function noiseBuffer() {
+				const buffer = audioCtx.createBuffer(1, audioCtx.sampleRate * 0.5, audioCtx.sampleRate);
+				const data = buffer.getChannelData(0);
+				for (let i = 0; i < data.length; i++) data[i] = Math.random() * 2 - 1;
+				return buffer;
+			}
+
+			const sharedNoise = noiseBuffer();
+
+			function playNoise(time, { duration, filterType, frequency, gainLevel }) {
+				const src = audioCtx.createBufferSource();
+				src.buffer = sharedNoise;
+				const filter = audioCtx.createBiquadFilter();
+				filter.type = filterType;
+				filter.frequency.value = frequency;
+				const gain = audioCtx.createGain();
+				gain.gain.setValueAtTime(gainLevel, time);
+				gain.gain.exponentialRampToValueAtTime(0.001, time + duration);
+				src.connect(filter).connect(gain).connect(masterGain);
+				src.start(time);
+				src.stop(time + duration);
+			}
+
+			const drums = {
+				kick: (t) => playKick(t),
+				snare: (t) => playNoise(t, { duration: 0.2, filterType: 'highpass', frequency: 1500, gainLevel: 0.7 }),
+				hihat: (t) => playNoise(t, { duration: 0.06, filterType: 'highpass', frequency: 7000, gainLevel: 0.4 }),
+				clap: (t) => playNoise(t, { duration: 0.15, filterType: 'bandpass', frequency: 1200, gainLevel: 0.8 }),
+				tom: (t) => {
+					const osc = audioCtx.createOscillator();
+					const gain = audioCtx.createGain();
+					osc.frequency.setValueAtTime(220, t);
+					osc.frequency.exponentialRampToValueAtTime(90, t + 0.15);
+					gain.gain.setValueAtTime(0.8, t);
+					gain.gain.exponentialRampToValueAtTime(0.001, t + 0.25);
+					osc.connect(gain).connect(masterGain);
+					osc.start(t);
+					osc.stop(t + 0.25);
+				},
+				rim: (t) => playNoise(t, { duration: 0.04, filterType: 'bandpass', frequency: 3000, gainLevel: 0.6 }),
+				crash: (t) => playNoise(t, { duration: 0.8, filterType: 'highpass', frequency: 5000, gainLevel: 0.5 }),
+				shout: (t) => {
+					const osc = audioCtx.createOscillator();
+					const gain = audioCtx.createGain();
+					osc.type = 'sawtooth';
+					osc.frequency.setValueAtTime(300, t);
+					osc.frequency.exponentialRampToValueAtTime(600, t + 0.1);
+					osc.frequency.exponentialRampToValueAtTime(200, t + 0.25);
+					gain.gain.setValueAtTime(0.4, t);
+					gain.gain.exponentialRampToValueAtTime(0.001, t + 0.3);
+					osc.connect(gain).connect(masterGain);
+					osc.start(t);
+					osc.stop(t + 0.3);
+					document.getElementById('shoutText').textContent =
+						shouts[Math.floor(Math.random() * shouts.length)];
+				},
+			};
+
+			// Drum pads
+			document.querySelectorAll('.drum-pad').forEach((pad) => {
+				pad.addEventListener('click', () => {
+					audioCtx.resume();
+					drums[pad.dataset.drum](audioCtx.currentTime);
+					pad.classList.add('is-hit');
+					setTimeout(() => pad.classList.remove('is-hit'), 120);
+				});
+			});
+
+			// Step sequencer (8 steps x 4 tracks)
+			const trackNames = ['kick', 'snare', 'hihat', 'clap'];
+			const defaultPattern = {
+				kick: [1, 0, 0, 0, 1, 0, 0, 0],
+				snare: [0, 0, 1, 0, 0, 0, 1, 0],
+				hihat: [1, 1, 1, 1, 1, 1, 1, 1],
+				clap: [0, 0, 0, 0, 1, 0, 0, 0],
+			};
+
+			const sequencerEl = document.getElementById('sequencer');
+			const stepEls = {};
+
+			trackNames.forEach((name) => {
+				const row = document.createElement('div');
+				row.className = 'drum-seq-row';
+				const label = document.createElement('span');
+				label.className = 'drum-seq-label';
+				label.textContent = name;
+				row.appendChild(label);
+				stepEls[name] = [];
+				defaultPattern[name].forEach((on, step) => {
+					const btn = document.createElement('button');
+					btn.type = 'button';
+					btn.className = 'drum-seq-step' + (on ? ' is-on' : '');
+					btn.setAttribute('aria-label', `${name} step ${step + 1}`);
+					btn.addEventListener('click', () => btn.classList.toggle('is-on'));
+					row.appendChild(btn);
+					stepEls[name].push(btn);
+				});
+				sequencerEl.appendChild(row);
+			});
+
+			// Transport
+			const playBtn = document.getElementById('playBtn');
+			const tempoInput = document.getElementById('tempo');
+			const tempoOut = document.getElementById('tempoOut');
+			const volumeInput = document.getElementById('volume');
+			const volumeOut = document.getElementById('volumeOut');
+
+			let isPlaying = false;
+			let currentStep = 0;
+			let timerId = null;
+
+			tempoInput.addEventListener('input', () => {
+				tempoOut.textContent = tempoInput.value;
+				if (isPlaying) startLoop();
+			});
+
+			volumeInput.addEventListener('input', () => {
+				volumeOut.textContent = volumeInput.value;
+				masterGain.gain.value = volumeInput.value / 100;
+			});
+
+			function clearPlayingHighlight() {
+				document.querySelectorAll('.drum-seq-step.is-playing').forEach((el) =>
+					el.classList.remove('is-playing')
+				);
+			}
+
+			function tick() {
+				clearPlayingHighlight();
+				trackNames.forEach((name) => {
+					const step = stepEls[name][currentStep];
+					step.classList.add('is-playing');
+					if (step.classList.contains('is-on')) drums[name](audioCtx.currentTime);
+				});
+				currentStep = (currentStep + 1) % 8;
+			}
+
+			function startLoop() {
+				clearInterval(timerId);
+				const interval = (60 / Number(tempoInput.value)) * 1000;
+				timerId = setInterval(tick, interval);
+			}
+
+			playBtn.addEventListener('click', () => {
+				audioCtx.resume();
+				isPlaying = !isPlaying;
+				playBtn.textContent = isPlaying ? '⏸' : '▶';
+				playBtn.setAttribute('aria-label', isPlaying ? 'Pause' : 'Play');
+				if (isPlaying) {
+					currentStep = 0;
+					tick();
+					startLoop();
+				} else {
+					clearInterval(timerId);
+					clearPlayingHighlight();
+				}
+			});
+		</script>
+	</body>
+</html>
