@@ -21,7 +21,7 @@ export default defineConfig({
         poetry_fr: html('poetry_fr.html'), advisory: html('advisory.html'), advisory_fr: html('advisory_fr.html'),
         expressions: html('expressions.html'), expressions_fr: html('expressions_fr.html'), threeD: html('3D.html'),
         threeD_fr: html('3D_fr.html'), portraits: html('portraits.html'), portraits_fr: html('portraits_fr.html'),
-        printer: html('printer.html'), freeChair: html('free-chair.html'), music: html('music.html'), runningMachien: html('running machien.html')
+        printer: html('printer.html'), freeChair: html('free-chair.html'), music: html('music.html'), runningMachine: html('running-machine.html')
       }
     }
   }

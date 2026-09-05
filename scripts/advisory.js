@@ -116,9 +116,9 @@ import { apiFetch } from './security.js';
       </div>
       <button class="advisory-outcome__reject" id="rejectSession" type="button">${strings.outcomeRejected}</button>
       <p id="sessionOutcomeStatus" class="advisory-outcome__status" role="status"></p>
-      <a href="./running%20machien.html">${strings.runnerLink}</a>
+      <a href="./running-machine.html">${strings.runnerLink}</a>
     </section>
-    <a class="advisory-runner-link" href="./running%20machien.html">${strings.runnerLink}</a>
+    <a class="advisory-runner-link" href="./running-machine.html">${strings.runnerLink}</a>
     <div id="consoleStatus" class="console-status">${strings.statusReady}</div>
   `;
   mainApp.appendChild(consoleDiv);
@@ -310,7 +310,7 @@ import { apiFetch } from './security.js';
     waitlistStatus.dataset.position = status.position;
     waitlistStatus.dataset.waiting = status.waiting;
     if (status.state === 'waiting' && status.waitingSince && Date.now() - new Date(status.waitingSince).getTime() >= WAITING_ROOM_LIMIT_MS) {
-      window.location.href = './running%20machien.html';
+      window.location.href = './running-machine.html';
       return;
     }
     waitlistCount.textContent = isFrench
@@ -346,7 +346,7 @@ import { apiFetch } from './security.js';
       waitlistBtn.disabled = false;
       voiceBtn.disabled = true;
       if (!getWaitlistRemainingSeconds()) {
-        window.location.href = './running%20machien.html';
+        window.location.href = './running-machine.html';
         return;
       }
     } else {
@@ -363,7 +363,7 @@ import { apiFetch } from './security.js';
       try {
         await connectAudioRoom();
       } catch (error) {
-        window.location.href = './running%20machien.html';
+        window.location.href = './running-machine.html';
         return;
       }
     } else {
@@ -650,7 +650,7 @@ import { apiFetch } from './security.js';
   sessionOutcome.querySelectorAll('[data-room]').forEach((button) => {
     button.addEventListener('click', () => {
       if (!intakeComplete || !joinedAt || waitlistState !== 'ready' || getWaitlistRemainingSeconds()) {
-        window.location.href = './running%20machien.html';
+        window.location.href = './running-machine.html';
         return;
       }
       selectedRoom = button.dataset.room;
@@ -663,7 +663,7 @@ import { apiFetch } from './security.js';
 
   rejectSession.addEventListener('click', async () => {
     if (['waiting', 'ready'].includes(waitlistState)) await leaveWaitlist().catch(() => {});
-    window.location.href = './running%20machien.html';
+    window.location.href = './running-machine.html';
   });
 
   loadIntake();
@@ -677,10 +677,10 @@ import { apiFetch } from './security.js';
     updateWaitlistCountdown();
     if (!getWaitlistRemainingSeconds()) {
       if (!intakeComplete || !joinedAt || waitlistState !== 'ready') {
-        window.location.href = './running%20machien.html';
+        window.location.href = './running-machine.html';
         return;
       }
-      updateWaitlist().catch(() => { window.location.href = './running%20machien.html'; });
+      updateWaitlist().catch(() => { window.location.href = './running-machine.html'; });
       return;
     }
     if (waitlistState === 'waiting' && waitingSince) {
