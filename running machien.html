@@ -72,7 +72,7 @@
         </div>
         <div class="runner-tools">
           <div class="route-total">45 minute route</div>
-          <div class="birdsong-control"><button id="birdsong" type="button" aria-pressed="false">Play birdsong</button><span>Birds are singing along the route.</span></div>
+          <div class="birdsong-control"><button id="birdsong" type="button" aria-pressed="false">Play birdsong</button><button id="meow" type="button">Meow</button></div>
         </div>
       </header>
 
@@ -128,6 +128,7 @@
       const saveNote = document.getElementById('saveNote');
       const completionMessage = document.getElementById('completionMessage');
       const birdsongButton = document.getElementById('birdsong');
+      const meowButton = document.getElementById('meow');
       const stops = [...document.querySelectorAll('.route-stop')];
       let stageIndex = 0;
       const secondsLeft = stages.map(() => stageLength);
@@ -155,6 +156,24 @@
         oscillator.stop(start + 0.25);
       }
 
+      async function playMeow() {
+        birdAudioContext ||= new (window.AudioContext || window.webkitAudioContext)();
+        await birdAudioContext.resume();
+        const oscillator = birdAudioContext.createOscillator();
+        const gain = birdAudioContext.createGain();
+        const start = birdAudioContext.currentTime;
+        oscillator.type = 'sawtooth';
+        oscillator.frequency.setValueAtTime(620, start);
+        oscillator.frequency.exponentialRampToValueAtTime(280, start + 0.22);
+        oscillator.frequency.exponentialRampToValueAtTime(430, start + 0.5);
+        gain.gain.setValueAtTime(0.0001, start);
+        gain.gain.exponentialRampToValueAtTime(0.08, start + 0.04);
+        gain.gain.exponentialRampToValueAtTime(0.0001, start + 0.52);
+        oscillator.connect(gain).connect(birdAudioContext.destination);
+        oscillator.start(start);
+        oscillator.stop(start + 0.55);
+      }
+
       function stopBirdsong() {
         if (birdsongTimer) window.clearInterval(birdsongTimer);
         birdsongTimer = null;
@@ -171,6 +190,8 @@
         birdsongButton.textContent = 'Stop birdsong';
         birdsongButton.setAttribute('aria-pressed', 'true');
       });
+
+      meowButton.addEventListener('click', playMeow);
 
       function saveState() {
         try {

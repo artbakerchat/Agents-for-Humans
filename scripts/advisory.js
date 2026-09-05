@@ -157,6 +157,7 @@ import { apiFetch } from './security.js';
   const waitlistCount = document.querySelector('#waitlistCount');
   const waitlistCountdown = document.querySelector('#waitlistCountdown');
   const waitlistTimerLabel = document.querySelector('#waitlistTimerLabel');
+  const waitlistTimerElement = waitlistCountdown.closest('.waitlist-timer');
   const waitlistBtn = document.querySelector('#waitlistBtn');
   const waitlistList = document.querySelector('#waitlistList');
   let waitlistState = 'idle';
@@ -273,7 +274,7 @@ import { apiFetch } from './security.js';
     waitlistTimerLabel.textContent = remainingSeconds
       ? (reservationStartedAt ? strings.waitlistTimer : strings.waitlistTimerIdle)
       : strings.waitlistTimerReady;
-    waitlistCountdown.closest('.waitlist-timer').classList.toggle('is-running', Boolean(reservationStartedAt && remainingSeconds));
+    waitlistTimerElement.classList.toggle('is-running', Boolean(reservationStartedAt && remainingSeconds));
   };
 
   const loadIntake = () => {
@@ -303,6 +304,7 @@ import { apiFetch } from './security.js';
     const response = await apiFetch(`${apiBaseUrl}/api/waitlist`);
     if (!response.ok) throw new Error(strings.waitlistError);
     const status = await response.json();
+    waitlistTimerElement.classList.remove('is-pending');
     waitlistState = status.state;
     waitingSince = status.waitingSince;
     waitlistStatus.dataset.position = status.position;
@@ -694,20 +696,26 @@ import { apiFetch } from './security.js';
   waitlistBtn.disabled = false;
   voiceBtn.disabled = true;
   waitlistBtn.addEventListener('click', async () => {
-    if (!reservationStartedAt) {
-      reservationStartedAt = Date.now();
-      sessionStorage.setItem('advisory-reservation-started-at', String(reservationStartedAt));
-      updateWaitlistCountdown();
-    }
-    joinedAt = Date.now();
-    sessionStorage.setItem('advisory-joined-at', String(joinedAt));
+    const leavingWaitlist = waitlistState === 'waiting';
     waitlistBtn.disabled = true;
     try {
-      if (waitlistState === 'waiting') await leaveWaitlist();
-      else if (waitlistState === 'idle') await joinWaitlist();
+      if (leavingWaitlist) {
+        await leaveWaitlist();
+        joinedAt = null;
+        sessionStorage.removeItem('advisory-joined-at');
+      } else if (waitlistState === 'idle') {
+        if (!reservationStartedAt) {
+          reservationStartedAt = Date.now();
+          sessionStorage.setItem('advisory-reservation-started-at', String(reservationStartedAt));
+          updateWaitlistCountdown();
+        }
+        await joinWaitlist();
+      }
     } catch (error) {
-      joinedAt = null;
-      sessionStorage.removeItem('advisory-joined-at');
+      if (!leavingWaitlist) {
+        joinedAt = null;
+        sessionStorage.removeItem('advisory-joined-at');
+      }
       updateWaitlistCountdown();
       waitlistStatus.textContent = error.message;
       waitlistBtn.disabled = false;
