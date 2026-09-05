@@ -18,6 +18,75 @@ body {
     #f4f7fb;
 }
 
+.arrival-gesture {
+  position: fixed;
+  inset: 0;
+  z-index: 10;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  pointer-events: none;
+  animation: arrival-fade 2.1s ease forwards;
+}
+.arrival-gesture::before {
+  position: absolute;
+  width: min(42rem, 72vw);
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.82), rgba(222, 238, 255, 0.2) 48%, transparent 70%);
+  content: '';
+}
+.arrival-gesture__wave {
+  position: absolute;
+  width: 8rem;
+  aspect-ratio: 1;
+  border: 1px solid rgba(75, 116, 255, 0.34);
+  border-radius: 50%;
+  animation: signal-wave 1.6s cubic-bezier(.2, .8, .2, 1) .15s both;
+}
+.arrival-gesture__hand {
+  position: absolute;
+  color: #3559d8;
+  font-size: clamp(2.2rem, 5vw, 4.2rem);
+  filter: drop-shadow(0 0.55rem 0.7rem rgba(53, 89, 216, 0.18));
+  opacity: 0;
+  animation: signal-hand 1.8s cubic-bezier(.2, .8, .2, 1) both;
+}
+.arrival-gesture__hand--one { animation-delay: .05s; }
+.arrival-gesture__hand--two { color: #7040d8; animation-delay: .28s; }
+.arrival-gesture__hand--three { animation-delay: .51s; }
+.home-opening .topbar,
+.home-opening .app {
+  animation: page-arrive .9s cubic-bezier(.2, .8, .2, 1) both;
+}
+.home-opening .app { animation-delay: .25s; }
+
+@keyframes arrival-fade {
+  0%, 68% { opacity: 1; }
+  100% { opacity: 0; visibility: hidden; }
+}
+@keyframes signal-wave {
+  0% { opacity: 0; transform: scale(.35); }
+  28% { opacity: .85; }
+  100% { opacity: 0; transform: scale(4.5); }
+}
+@keyframes signal-hand {
+  0% { opacity: 0; transform: translateX(-8rem) rotate(-16deg) scale(.72); }
+  22% { opacity: 1; }
+  72% { opacity: .92; }
+  100% { opacity: 0; transform: translateX(8rem) rotate(12deg) scale(1.04); }
+}
+@keyframes page-arrive {
+  0% { opacity: 0; transform: translateY(.8rem); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .arrival-gesture { display: none; }
+  .home-opening .topbar,
+  .home-opening .app { animation: none; }
+}
+
 .topbar,
 .app {
   width: min(1200px, 100%);
