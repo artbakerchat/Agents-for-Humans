@@ -4,7 +4,7 @@ import { apiFetch } from './security.js';
   const isFrench = document.documentElement.lang === 'fr';
   const WAITING_ROOM_LIMIT_MS = 10 * 60 * 1000;
   const ROOM_CAPACITY = 5;
-  const RECORDING_LIMIT_MS = 15 * 60 * 1000;
+  const RECORDING_LIMIT_MS = 25 * 60 * 1000;
 
   // Localized UI strings
   const strings = isFrench ? {
@@ -27,8 +27,8 @@ import { apiFetch } from './security.js';
     waitlistWaiting: (position, total, elapsed) => `Veuillez rejoindre la liste d'attente. Position ${position} sur ${total}. Temps écoulé: ${elapsed}.`,
     waitlistReady: "Les cinq participants sont prêts. Vous pouvez enregistrer.",
     waitlistIdle: "Cliquez sur le bouton pour entrer dans la liste, puis parlez à l'agent d'accueil.",
-    waitlistExpired: "La période d'attente de 10 minutes est terminée.",
-    recordingLimit: "La limite d'enregistrement de 15 minutes est atteinte.",
+    waitlistExpired: "La période d'attente de 10 minutes est terminée. Votre session comprend 10 minutes supplémentaires, soit jusqu'à 25 minutes d'enregistrement.",
+    recordingLimit: "La limite d'enregistrement de 25 minutes est atteinte.",
     intakeTitle: "Parlez à l'agent d'accueil",
     intakeName: "Votre nom",
     intakeColors: "Vos couleurs préférées",
@@ -36,7 +36,7 @@ import { apiFetch } from './security.js';
     intakeSubmit: "Partager avec l'agent",
     intakeSaved: (name) => `Merci ${name}. L'agent vous connaît maintenant.`,
     outcomeTitle: "Votre session est prête",
-    outcomePrompt: "Choisissez votre destination pour les 15 prochaines minutes.",
+    outcomePrompt: "Choisissez votre destination pour les 25 prochaines minutes (10 minutes supplémentaires).",
     controlRoom: "Salle de contrôle",
     bobDylanHall: "Salle Bob Dylan",
     outcomeAccepted: (room) => `Bienvenue dans ${room}. Vous pouvez commencer l'enregistrement.`,
@@ -63,8 +63,8 @@ import { apiFetch } from './security.js';
     waitlistWaiting: (position, total, elapsed) => `Please wait. Position ${position} of ${total}. Elapsed: ${elapsed}.`,
     waitlistReady: "Five participants are active. You can record now.",
     waitlistIdle: "Click the button to enter the waitlist, then talk to the welcome agent.",
-    waitlistExpired: "The 10-minute waiting period has ended.",
-    recordingLimit: "The 15-minute recording limit has been reached.",
+    waitlistExpired: "The 10-minute waiting period has ended. We have added 10 minutes to your session, so you can record for up to 25 minutes.",
+    recordingLimit: "The 25-minute recording limit has been reached.",
     intakeTitle: "Talk to the welcome agent",
     intakeName: "Your name",
     intakeColors: "Your favourite colours",
@@ -72,7 +72,7 @@ import { apiFetch } from './security.js';
     intakeSubmit: "Share with the agent",
     intakeSaved: (name) => `Thanks, ${name}. The agent knows you now.`,
     outcomeTitle: "Your session is ready",
-    outcomePrompt: "Choose your destination for the next 15 minutes.",
+    outcomePrompt: "Choose your destination for the next 25 minutes (10 extra minutes added).",
     controlRoom: "Control Room",
     bobDylanHall: "Bob Dylan's Hall",
     outcomeAccepted: (room) => `Welcome to ${room}. You can begin recording.`,
@@ -141,6 +141,9 @@ import { apiFetch } from './security.js';
   let audioOutputDestination = null;
   let recordingTimeoutId = null;
   let recordingStartedAt = null;
+  let simpleRecorder = null;
+  let simpleRecorderChunks = [];
+  let simpleRecorderStopPromise = null;
 
   const voiceBtn = document.querySelector('#voiceBtn');
   const intakeForm = document.querySelector('#agentIntake');
@@ -265,6 +268,7 @@ import { apiFetch } from './security.js';
   const getWaitlistRemainingSeconds = () => reservationStartedAt
     ? Math.max(0, Math.ceil((reservationStartedAt + WAITING_ROOM_LIMIT_MS - Date.now()) / 1000))
     : WAITING_ROOM_LIMIT_MS / 1000;
+  const simpleRecordingAvailable = () => Boolean(joinedAt && !getWaitlistRemainingSeconds());
 
   const updateWaitlistCountdown = () => {
     const remainingSeconds = getWaitlistRemainingSeconds();
@@ -309,10 +313,6 @@ import { apiFetch } from './security.js';
     waitingSince = status.waitingSince;
     waitlistStatus.dataset.position = status.position;
     waitlistStatus.dataset.waiting = status.waiting;
-    if (status.state === 'waiting' && status.waitingSince && Date.now() - new Date(status.waitingSince).getTime() >= WAITING_ROOM_LIMIT_MS) {
-      window.location.href = './running-machine.html';
-      return;
-    }
     waitlistCount.textContent = isFrench
       ? `Enregistrement: ${status.active || 0}/${ROOM_CAPACITY} · En attente: ${status.waiting}`
       : `Recording: ${status.active || 0}/${ROOM_CAPACITY} · Waiting: ${status.waiting}`;
@@ -324,7 +324,14 @@ import { apiFetch } from './security.js';
     }
     const reservationExpired = !getWaitlistRemainingSeconds();
     const hasVerifiedWaitingSession = Boolean(intakeComplete && joinedAt);
-    if (status.state === 'ready' && reservationExpired && hasVerifiedWaitingSession) {
+    if (reservationExpired && joinedAt) {
+      showOutcome(true);
+      waitlistStatus.textContent = strings.waitlistExpired;
+      updateWaitlistCountdown();
+      waitlistBtn.hidden = true;
+      voiceBtn.disabled = !selectedRoom;
+      voiceBtn.textContent = isRecording ? strings.micBtnStop : strings.micBtnStart;
+    } else if (status.state === 'ready' && reservationExpired && hasVerifiedWaitingSession) {
       showOutcome(true);
       waitlistStatus.textContent = strings.waitlistReady;
       updateWaitlistCountdown();
@@ -467,6 +474,18 @@ import { apiFetch } from './security.js';
     await writable.close();
   };
 
+  const downloadSimpleRecording = (blob) => {
+    const extension = blob.type.includes('ogg') ? 'ogg' : 'webm';
+    const link = document.createElement('a');
+    const objectUrl = URL.createObjectURL(blob);
+    link.href = objectUrl;
+    link.download = `simple-recording-${new Date().toISOString().replace(/[:.]/g, '-')}.${extension}`;
+    document.body.append(link);
+    link.click();
+    link.remove();
+    window.setTimeout(() => URL.revokeObjectURL(objectUrl), 0);
+  };
+
   const getAnonymousSessionId = () => {
     if (!anonymousSessionIdPromise) {
       anonymousSessionIdPromise = (async () => {
@@ -498,8 +517,9 @@ import { apiFetch } from './security.js';
           destination: selectedRoom,
           roomCapacity: ROOM_CAPACITY,
           waitingLimitMinutes: 10,
-          recordingLimitMinutes: 15,
-          speechSuppressed: true,
+          recordingLimitMinutes: 25,
+          speechSuppressed: !simpleRecordingAvailable(),
+          recordingMode: simpleRecordingAvailable() ? 'simple' : 'room',
           retainedAudio: ['instruments', 'background-noise']
         })
       },
@@ -562,6 +582,26 @@ import { apiFetch } from './security.js';
 
     try {
       mediaStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      if (simpleRecordingAvailable() && window.MediaRecorder) {
+        simpleRecorderChunks = [];
+        simpleRecorderStopPromise = new Promise((resolve) => {
+          simpleRecorder = new MediaRecorder(mediaStream);
+          simpleRecorder.addEventListener('dataavailable', (event) => {
+            if (event.data.size) simpleRecorderChunks.push(event.data);
+          });
+          simpleRecorder.addEventListener('stop', () => {
+            resolve(new Blob(simpleRecorderChunks, { type: simpleRecorder.mimeType }));
+          }, { once: true });
+          simpleRecorder.start(1000);
+        });
+        recordingStartedAt = Date.now();
+        recordingTimeoutId = window.setTimeout(() => {
+          if (!isRecording) return;
+          stopRecordingAndSend().catch((error) => console.error('Could not stop timed recording:', error));
+          consoleStatus.textContent = strings.recordingLimit;
+        }, RECORDING_LIMIT_MS);
+        return;
+      }
       audioContext = new (window.AudioContext || window.webkitAudioContext)();
       const source = audioContext.createMediaStreamSource(mediaStream);
       scriptProcessor = audioContext.createScriptProcessor(4096, 1, 1);
@@ -571,7 +611,7 @@ import { apiFetch } from './security.js';
       scriptProcessor.onaudioprocess = (e) => {
         if (!isRecording) return;
         const channelData = e.inputBuffer.getChannelData(0);
-        const filteredData = removeSpeech(channelData);
+        const filteredData = simpleRecordingAvailable() ? channelData : removeSpeech(channelData);
         e.outputBuffer.getChannelData(0).set(filteredData);
         streamChunkSamples.push(...filteredData);
         const chunkLength = Math.floor(audioContext.sampleRate * 20);
@@ -605,6 +645,11 @@ import { apiFetch } from './security.js';
     vadSilenceFrames = 0;
     voiceBtn.classList.remove('recording');
 
+    if (simpleRecorder) {
+      if (simpleRecorder.state === 'recording') simpleRecorder.stop();
+      simpleRecorder = null;
+    }
+
     if (scriptProcessor) {
       scriptProcessor.disconnect();
       scriptProcessor = null;
@@ -628,9 +673,19 @@ import { apiFetch } from './security.js';
 
   // Stop recording after flushing the final partial stream chunk.
   const stopRecordingAndSend = async () => {
+    const simpleRecordingPromise = simpleRecorderStopPromise;
+    const isSimpleRecording = Boolean(simpleRecorder && simpleRecordingPromise);
+    if (isSimpleRecording) simpleRecorder.stop();
     const inputSampleRate = audioContext ? audioContext.sampleRate : 48000;
-    if (streamChunkSamples.length) {
+    if (!isSimpleRecording && streamChunkSamples.length) {
       queueStreamChunk(streamChunkSamples.splice(0), inputSampleRate);
+    }
+    if (isSimpleRecording) {
+      const blob = await simpleRecordingPromise;
+      const name = `simple-recording-${new Date().toISOString().replace(/[:.]/g, '-')}.${blob.type.includes('ogg') ? 'ogg' : 'webm'}`;
+      await saveRecording(name, blob);
+      downloadSimpleRecording(blob);
+      simpleRecorderStopPromise = null;
     }
     stopRecordingState();
     consoleStatus.textContent = strings.statusReady;
@@ -649,7 +704,8 @@ import { apiFetch } from './security.js';
 
   sessionOutcome.querySelectorAll('[data-room]').forEach((button) => {
     button.addEventListener('click', () => {
-      if (!intakeComplete || !joinedAt || waitlistState !== 'ready' || getWaitlistRemainingSeconds()) {
+      const simpleRecording = simpleRecordingAvailable();
+      if (!joinedAt || (!simpleRecording && (!intakeComplete || waitlistState !== 'ready' || getWaitlistRemainingSeconds()))) {
         window.location.href = './running-machine.html';
         return;
       }
@@ -676,11 +732,7 @@ import { apiFetch } from './security.js';
   window.setInterval(() => {
     updateWaitlistCountdown();
     if (!getWaitlistRemainingSeconds()) {
-      if (!intakeComplete || !joinedAt || waitlistState !== 'ready') {
-        window.location.href = './running-machine.html';
-        return;
-      }
-      updateWaitlist().catch(() => { window.location.href = './running-machine.html'; });
+      updateWaitlist().catch((error) => { waitlistStatus.textContent = error.message; });
       return;
     }
     if (waitlistState === 'waiting' && waitingSince) {
@@ -722,7 +774,7 @@ import { apiFetch } from './security.js';
     }
   });
   voiceBtn.addEventListener('click', async () => {
-    if (waitlistState === 'ready') {
+    if (waitlistState === 'ready' || simpleRecordingAvailable()) {
       if (isRecording) await stopRecordingAndSend();
       else await startRecording();
       return;
