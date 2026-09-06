@@ -41,8 +41,19 @@
         <div>
           <p class="eyebrow">Terrain de jeu vocal</p>
           <h2>Salle de contrôle Conseil</h2>
-          <p class="subtitle">Rejoignez la salle de cinq participants pour parler. La détection d’activité vocale n’envoie au contrôle Nova 2 que de courtes fenêtres de parole utile; les réponses audio sont désactivées.</p>
+          <p class="subtitle">Attendez jusqu’à 10 minutes pour entrer dans une salle de cinq participants, puis enregistrez jusqu’à 15 minutes; la parole est supprimée tandis que les instruments et le bruit de fond sont conservés.</p>
         </div>
+      </section>
+      <section class="waitlist-panel" aria-live="polite">
+        <h3>Rejoindre la liste d'attente</h3>
+        <div class="waitlist-timer" aria-live="polite">
+          <strong id="waitlistCountdown">10:00</strong>
+          <span id="waitlistTimerLabel">Commence dès votre entrée dans la liste</span>
+        </div>
+        <p id="waitlistStatus">Cliquez sur le bouton pour entrer dans la liste, puis parlez à l'agent d'accueil.</p>
+        <p id="waitlistCount"></p>
+        <button id="waitlistBtn" class="waitlist-btn" type="button">Entrer dans la liste d'attente</button>
+        <ol id="waitlistList" class="waitlist-list"></ol>
       </section>
       <div id="turnstile-widget" class="turnstile-widget" aria-label="Vérification humaine"></div>
     </main>

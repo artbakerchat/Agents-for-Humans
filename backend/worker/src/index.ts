@@ -9,7 +9,7 @@ interface Env {
 }
 
 const corsHeaders = {
-  "access-control-allow-headers": "content-type, authorization, x-session-id",
+  "access-control-allow-headers": "content-type, authorization, x-session-id, x-recording-role, x-recording-metadata, x-room-capacity, x-waiting-room-limit-seconds",
   "access-control-allow-methods": "GET, POST, OPTIONS",
   "access-control-allow-origin": "*",
 };
@@ -122,6 +122,11 @@ export default {
       headers: {
         "authorization": `Bearer ${env.APP_AUTH_TOKEN}`,
         "content-type": request.headers.get("content-type") ?? "application/json",
+        "x-session-id": request.headers.get("x-session-id") ?? "",
+        "x-recording-role": request.headers.get("x-recording-role") ?? "",
+        "x-recording-metadata": request.headers.get("x-recording-metadata") ?? "",
+        "x-room-capacity": request.headers.get("x-room-capacity") ?? "",
+        "x-waiting-room-limit-seconds": request.headers.get("x-waiting-room-limit-seconds") ?? "",
       },
       body: request.method === "GET" ? undefined : request.body,
     });

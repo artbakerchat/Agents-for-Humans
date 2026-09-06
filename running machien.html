@@ -1,0 +1,327 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Running Machine - Paris, Niagara, Vancouver</title>
+    <style>
+      :root {
+        color: #17202a;
+        background: #e9f1ee;
+        font-family: Georgia, "Times New Roman", serif;
+        font-synthesis: none;
+      }
+
+      * { box-sizing: border-box; }
+      body { min-width: 320px; min-height: 100vh; margin: 0; padding: clamp(1rem, 4vw, 4rem); background: linear-gradient(145deg, #e9f1ee 0%, #f7efe1 52%, #dce8ef 100%); }
+      button { font: inherit; }
+      .runner { width: min(72rem, 100%); margin: 0 auto; }
+      .runner-header { display: flex; align-items: end; justify-content: space-between; gap: 1.5rem; margin-bottom: 2rem; }
+      .eyebrow { margin: 0 0 0.45rem; color: #58746d; font: 700 0.72rem/1.2 Arial, sans-serif; letter-spacing: 0.16em; text-transform: uppercase; }
+      h1, h2, p { margin-top: 0; }
+      h1 { max-width: 34rem; margin-bottom: 0.65rem; font-size: clamp(2.2rem, 6vw, 5rem); line-height: 0.95; letter-spacing: 0; }
+      .lede { max-width: 38rem; margin-bottom: 0; color: #52605e; font: 1rem/1.55 Arial, sans-serif; }
+      .route-total { flex: 0 0 auto; padding: 0.75rem 1rem; border: 1px solid rgba(23, 32, 42, 0.16); border-radius: 0.45rem; background: rgba(255, 255, 255, 0.45); color: #35564f; font: 700 0.76rem/1.2 Arial, sans-serif; letter-spacing: 0.08em; text-transform: uppercase; }
+      .runner-tools { display: grid; gap: 0.7rem; justify-items: end; }
+      .machine { overflow: hidden; position: relative; min-height: 24rem; padding: clamp(1.4rem, 4vw, 3rem); padding-bottom: 6.5rem; border: 1px solid rgba(23, 32, 42, 0.18); border-radius: 0.6rem; background: #b9d8d1; box-shadow: 0 1.3rem 3rem rgba(36, 64, 61, 0.14); transition: background 500ms ease; }
+      .machine[data-place="niagara"] { background: #b9cde0; }
+      .machine[data-place="vancouver"] { background: #9eb4ac; }
+      .skyline { position: absolute; right: 0; bottom: 0; left: 0; z-index: 0; height: 48%; opacity: 0.45; background: linear-gradient(135deg, transparent 0 10%, #759e9a 10% 19%, transparent 19% 28%, #638d8b 28% 36%, transparent 36% 45%, #759e9a 45% 55%, transparent 55% 67%, #638d8b 67% 78%, transparent 78%); clip-path: polygon(0 58%, 8% 47%, 16% 63%, 25% 29%, 35% 57%, 43% 39%, 50% 63%, 59% 23%, 68% 52%, 78% 34%, 87% 62%, 94% 42%, 100% 55%, 100% 100%, 0 100%); pointer-events: none; }
+      .machine[data-place="niagara"] .skyline { background: #6a8da2; clip-path: polygon(0 56%, 24% 56%, 29% 34%, 35% 56%, 48% 56%, 53% 30%, 60% 56%, 100% 56%, 100% 100%, 0 100%); }
+      .machine[data-place="vancouver"] .skyline { background: #456b68; clip-path: polygon(0 76%, 11% 38%, 24% 77%, 38% 20%, 54% 77%, 68% 34%, 82% 77%, 93% 48%, 100% 76%, 100% 100%, 0 100%); }
+      .machine::before { content: ""; position: absolute; top: 2rem; right: 10%; z-index: 0; width: 5rem; height: 5rem; border-radius: 50%; background: rgba(255, 245, 197, 0.72); box-shadow: 0 0 0 1.3rem rgba(255, 245, 197, 0.12); pointer-events: none; }
+      .machine::after { content: "Eiffel Tower"; position: absolute; right: 11%; bottom: 7rem; z-index: 0; color: rgba(23, 60, 57, 0.55); font: 700 0.72rem Arial, sans-serif; letter-spacing: 0.12em; text-transform: uppercase; pointer-events: none; }
+      .machine[data-place="niagara"]::before { top: 1.8rem; right: 14%; width: 4.2rem; height: 4.2rem; background: rgba(235, 248, 255, 0.8); }
+      .machine[data-place="niagara"]::after { content: "Waterfall mist"; right: 10%; color: rgba(32, 70, 99, 0.62); }
+      .machine[data-place="vancouver"]::before { top: 2rem; right: 14%; width: 4.5rem; height: 4.5rem; background: rgba(229, 239, 207, 0.72); }
+      .machine[data-place="vancouver"]::after { content: "Mountain air"; right: 10%; color: rgba(23, 58, 56, 0.62); }
+      .machine-copy { position: relative; z-index: 2; max-width: 30rem; }
+      .machine h2 { margin-bottom: 0.5rem; color: #173c39; font-size: clamp(2rem, 5vw, 4rem); line-height: 1; }
+      .machine[data-place="niagara"] h2 { color: #204663; }
+      .machine[data-place="vancouver"] h2 { color: #173a38; }
+      .machine-status { margin-bottom: 1.8rem; color: #35564f; font: 700 0.8rem/1.3 Arial, sans-serif; letter-spacing: 0.08em; text-transform: uppercase; }
+      .timer { position: relative; z-index: 2; margin-bottom: 1.25rem; color: #132a2a; font: 700 clamp(4rem, 12vw, 8rem)/0.85 Arial, sans-serif; letter-spacing: -0.06em; }
+      .track { position: absolute; right: 8%; bottom: 1.7rem; left: 8%; z-index: 1; height: 2.25rem; overflow: hidden; border: 0.45rem solid #273f41; border-radius: 1.5rem; background: repeating-linear-gradient(100deg, #486361 0 1.2rem, #78918b 1.2rem 2.4rem); pointer-events: none; }
+      .track::after { content: ""; position: absolute; inset: 0; background: repeating-linear-gradient(100deg, transparent 0 1.2rem, rgba(255, 255, 255, 0.3) 1.2rem 1.35rem); animation: belt 700ms linear infinite; }
+      .machine.is-paused .track::after { animation-play-state: paused; }
+      @keyframes belt { to { transform: translateX(2.4rem); } }
+      .controls { position: relative; z-index: 3; display: flex; flex-wrap: wrap; gap: 0.7rem; margin-top: 1.5rem; }
+      .controls button { min-width: 7.5rem; min-height: 2.75rem; padding: 0.8rem 1rem; border: 1px solid #173c39; border-radius: 0.35rem; background: #173c39; color: #fff; cursor: pointer; font: 700 0.85rem/1 Arial, sans-serif; }
+      .controls button:hover { background: #285f58; }
+      .controls button.secondary { background: rgba(255, 255, 255, 0.38); color: #173c39; }
+      .controls button.secondary:hover { background: rgba(255, 255, 255, 0.72); }
+      .route { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.8rem; margin-top: 1rem; }
+      .route-stop { display: block; position: relative; width: 100%; min-height: 9.5rem; padding: 1rem; border: 1px solid rgba(23, 32, 42, 0.15); border-radius: 0.45rem; background: rgba(255, 255, 255, 0.52); color: #17202a; cursor: pointer; text-align: left; }
+      .route-stop:hover { background: rgba(255, 255, 255, 0.82); }
+      .route-stop[data-active="true"] { border-color: #173c39; background: rgba(255, 255, 255, 0.82); box-shadow: inset 0 0 0 2px #173c39; }
+      .route-stop[data-done="true"] { background: rgba(188, 220, 202, 0.78); }
+      .route-stop strong { display: block; margin-bottom: 0.35rem; font-size: 1.3rem; }
+      .route-stop span { color: #5b6c69; font: 0.76rem/1.35 Arial, sans-serif; }
+      .route-stop time { position: absolute; right: 1rem; bottom: 1rem; color: #35564f; font: 700 0.72rem Arial, sans-serif; }
+      .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0; }
+      @media (max-width: 640px) { .runner-header { align-items: start; flex-direction: column; } .route { grid-template-columns: 1fr; } .route-stop { min-height: 5.5rem; } .route-stop time { top: 1.15rem; bottom: auto; } .machine { min-height: 27rem; } }
+    </style>
+  </head>
+  <body>
+    <main class="runner">
+      <header class="runner-header">
+        <div>
+          <p class="eyebrow">Running machine</p>
+          <h1>Three cities. One steady rhythm.</h1>
+          <p class="lede">Run fifteen minutes through Paris, Niagara, and Vancouver. The machine moves to the next place automatically when each stage is complete.</p>
+        </div>
+        <div class="runner-tools">
+          <div class="route-total">45 minute route</div>
+          <div class="birdsong-control"><button id="birdsong" type="button" aria-pressed="false">Play birdsong</button><span>Birds are singing along the route.</span></div>
+        </div>
+      </header>
+
+      <section class="machine" id="machine" data-place="paris" aria-labelledby="placeName">
+        <div class="skyline" aria-hidden="true"></div>
+        <div class="machine-copy">
+          <p class="machine-status" id="stageStatus" role="status">Stage 1 of 3 · Running</p>
+          <h2 id="placeName">Paris</h2>
+          <div class="timer" id="timer" aria-live="polite">15:00</div>
+          <div class="controls">
+            <button id="startPause" type="button">Start run</button>
+            <button id="reset" class="secondary" type="button">Reset route</button>
+          </div>
+          <p class="save-note" id="saveNote">Timer state is saved in this browser.</p>
+        </div>
+        <div class="track" aria-hidden="true"></div>
+      </section>
+
+      <section class="route" aria-label="Running route stages">
+        <button class="route-stop" data-place="paris" data-index="0" data-active="true" type="button" aria-label="Select Paris stage">
+          <strong>Paris</strong>
+          <span>Begin with a bright city pace.</span>
+          <time>15 min</time>
+        </button>
+        <button class="route-stop" data-place="niagara" data-index="1" type="button" aria-label="Select Niagara stage">
+          <strong>Niagara</strong>
+          <span>Settle into the sound of falling water.</span>
+          <time>15 min</time>
+        </button>
+        <button class="route-stop" data-place="vancouver" data-index="2" type="button" aria-label="Select Vancouver stage">
+          <strong>Vancouver</strong>
+          <span>Finish among mountains, trees, and salt air.</span>
+          <time>15 min</time>
+        </button>
+      </section>
+      <p class="sr-only" id="completionMessage" role="status"></p>
+    </main>
+
+    <script>
+      const stages = [
+        { key: 'paris', name: 'Paris', description: 'Begin with a bright city pace.' },
+        { key: 'niagara', name: 'Niagara', description: 'Settle into the sound of falling water.' },
+        { key: 'vancouver', name: 'Vancouver', description: 'Finish among mountains, trees, and salt air.' }
+      ];
+      const stageLength = 15 * 60;
+      const storageKey = 'running-machien-timers-v1';
+      const machine = document.getElementById('machine');
+      const timer = document.getElementById('timer');
+      const placeName = document.getElementById('placeName');
+      const stageStatus = document.getElementById('stageStatus');
+      const startPause = document.getElementById('startPause');
+      const resetButton = document.getElementById('reset');
+      const saveNote = document.getElementById('saveNote');
+      const completionMessage = document.getElementById('completionMessage');
+      const birdsongButton = document.getElementById('birdsong');
+      const stops = [...document.querySelectorAll('.route-stop')];
+      let stageIndex = 0;
+      const secondsLeft = stages.map(() => stageLength);
+      let intervalId = null;
+      let running = false;
+      let deadlineAt = null;
+      let birdAudioContext = null;
+      let birdsongTimer = null;
+
+      const formatTime = (seconds) => `${String(Math.floor(seconds / 60)).padStart(2, '0')}:${String(seconds % 60).padStart(2, '0')}`;
+
+      function chirp() {
+        if (!birdAudioContext) return;
+        const oscillator = birdAudioContext.createOscillator();
+        const gain = birdAudioContext.createGain();
+        const start = birdAudioContext.currentTime;
+        oscillator.type = 'sine';
+        oscillator.frequency.setValueAtTime(1700 + Math.random() * 500, start);
+        oscillator.frequency.exponentialRampToValueAtTime(2900 + Math.random() * 700, start + 0.18);
+        gain.gain.setValueAtTime(0.0001, start);
+        gain.gain.exponentialRampToValueAtTime(0.06, start + 0.03);
+        gain.gain.exponentialRampToValueAtTime(0.0001, start + 0.24);
+        oscillator.connect(gain).connect(birdAudioContext.destination);
+        oscillator.start(start);
+        oscillator.stop(start + 0.25);
+      }
+
+      function stopBirdsong() {
+        if (birdsongTimer) window.clearInterval(birdsongTimer);
+        birdsongTimer = null;
+        birdsongButton.textContent = 'Play birdsong';
+        birdsongButton.setAttribute('aria-pressed', 'false');
+      }
+
+      birdsongButton.addEventListener('click', async () => {
+        if (birdsongTimer) { stopBirdsong(); return; }
+        birdAudioContext ||= new (window.AudioContext || window.webkitAudioContext)();
+        await birdAudioContext.resume();
+        chirp();
+        birdsongTimer = window.setInterval(chirp, 3200);
+        birdsongButton.textContent = 'Stop birdsong';
+        birdsongButton.setAttribute('aria-pressed', 'true');
+      });
+
+      function saveState() {
+        try {
+          localStorage.setItem(storageKey, JSON.stringify({
+            secondsLeft,
+            stageIndex,
+            running,
+            deadlineAt,
+            savedAt: Date.now()
+          }));
+          saveNote.textContent = 'Timer state saved in this browser.';
+        } catch (error) {
+          saveNote.textContent = 'Timer state is available for this visit.';
+        }
+      }
+
+      function startCurrentStage() {
+        deadlineAt = Date.now() + (secondsLeft[stageIndex] * 1000);
+        running = true;
+      }
+
+      function syncElapsed() {
+        if (!running || deadlineAt === null) return;
+        const now = Date.now();
+        while (now >= deadlineAt) {
+          secondsLeft[stageIndex] = 0;
+          if (stageIndex === stages.length - 1) {
+            running = false;
+            deadlineAt = null;
+            clearInterval(intervalId);
+            intervalId = null;
+            return;
+          }
+          stageIndex += 1;
+          deadlineAt += stageLength * 1000;
+        }
+        secondsLeft[stageIndex] = Math.ceil((deadlineAt - now) / 1000);
+      }
+
+      function loadState() {
+        try {
+          const saved = JSON.parse(localStorage.getItem(storageKey));
+          if (!saved || !Array.isArray(saved.secondsLeft) || saved.secondsLeft.length !== stages.length) return;
+          saved.secondsLeft.forEach((seconds, index) => {
+            secondsLeft[index] = Math.max(0, Math.min(stageLength, Number(seconds) || 0));
+          });
+          stageIndex = Math.max(0, Math.min(stages.length - 1, Number(saved.stageIndex) || 0));
+          running = saved.running === true;
+          deadlineAt = Number(saved.deadlineAt) || null;
+          if (running) {
+            if (deadlineAt === null) deadlineAt = (Number(saved.savedAt) || Date.now()) + (secondsLeft[stageIndex] * 1000);
+            syncElapsed();
+          }
+        } catch (error) {
+          saveNote.textContent = 'Timer state is available for this visit.';
+        }
+      }
+
+      function render() {
+        const stage = stages[stageIndex];
+        machine.dataset.place = stage.key;
+        machine.classList.toggle('is-paused', !running);
+        placeName.textContent = stage.name;
+        timer.textContent = formatTime(secondsLeft[stageIndex]);
+        stageStatus.textContent = `Stage ${stageIndex + 1} of ${stages.length} · ${running ? 'Running' : 'Paused'} · ${secondsLeft[stageIndex] === 0 ? 'Complete' : '15 minutes'}`;
+        startPause.textContent = running ? 'Pause run' : 'Start run';
+        stops.forEach((stop, index) => {
+          stop.dataset.active = String(index === stageIndex);
+          stop.dataset.done = String(index < stageIndex || secondsLeft[index] === 0);
+        });
+      }
+
+      function finishRoute() {
+        running = false;
+        clearInterval(intervalId);
+        intervalId = null;
+        secondsLeft[stageIndex] = 0;
+        completionMessage.textContent = 'The Paris, Niagara, and Vancouver route is complete.';
+        saveState();
+        render();
+      }
+
+      function tick() {
+        syncElapsed();
+        if (!running) { finishRoute(); return; }
+        saveState();
+        render();
+      }
+
+      startPause.addEventListener('click', () => {
+        if (running) {
+          syncElapsed();
+          running = false;
+          deadlineAt = null;
+          clearInterval(intervalId);
+          intervalId = null;
+        } else {
+          if (secondsLeft[stageIndex] === 0) {
+            secondsLeft[stageIndex] = stageLength;
+          }
+          startCurrentStage();
+          intervalId = setInterval(tick, 250);
+        }
+        saveState();
+        render();
+      });
+
+      resetButton.addEventListener('click', () => {
+        clearInterval(intervalId);
+        intervalId = null;
+        running = false;
+        stageIndex = 0;
+        secondsLeft.fill(stageLength);
+        deadlineAt = null;
+        completionMessage.textContent = '';
+        saveState();
+        render();
+      });
+
+      stops.forEach((stop) => {
+        stop.addEventListener('click', () => {
+          syncElapsed();
+          stageIndex = Number(stop.dataset.index);
+          if (running && secondsLeft[stageIndex] > 0) startCurrentStage();
+          else if (secondsLeft[stageIndex] === 0) {
+            running = false;
+            deadlineAt = null;
+          }
+          completionMessage.textContent = '';
+          saveState();
+          render();
+        });
+      });
+
+      window.addEventListener('pagehide', () => {
+        syncElapsed();
+        saveState();
+      });
+
+      document.addEventListener('visibilitychange', () => {
+        if (document.hidden) {
+          syncElapsed();
+          saveState();
+        }
+      });
+
+      loadState();
+      if (running) {
+        intervalId = setInterval(tick, 250);
+      }
+      render();
+    </script>
+  </body>
+</html>

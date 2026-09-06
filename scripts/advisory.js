@@ -1,8 +1,10 @@
 import { apiFetch } from './security.js';
-import Hls from 'hls.js';
 
 (() => {
   const isFrench = document.documentElement.lang === 'fr';
+  const WAITING_ROOM_LIMIT_MS = 10 * 60 * 1000;
+  const ROOM_CAPACITY = 5;
+  const RECORDING_LIMIT_MS = 15 * 60 * 1000;
 
   // Localized UI strings
   const strings = isFrench ? {
@@ -17,10 +19,29 @@ import Hls from 'hls.js';
     recordFolderReady: "Dossier d'enregistrement sélectionné",
     recordFolderUnsupported: "L'enregistrement local n'est pas pris en charge par ce navigateur.",
     waitlistJoin: "Rejoindre la liste d'attente",
+    waitlistEnter: "Entrer dans la liste d'attente",
+    waitlistTimer: "Temps d'attente restant",
+    waitlistTimerIdle: "Commence dès votre entrée dans la liste",
+    waitlistTimerReady: "Temps d'attente terminé",
     waitlistLeave: "Quitter la liste d'attente",
     waitlistWaiting: (position, total, elapsed) => `Veuillez rejoindre la liste d'attente. Position ${position} sur ${total}. Temps écoulé: ${elapsed}.`,
     waitlistReady: "Les cinq participants sont prêts. Vous pouvez enregistrer.",
-    waitlistIdle: "Cliquez sur le microphone pour rejoindre la liste d'attente.",
+    waitlistIdle: "Cliquez sur le bouton pour entrer dans la liste, puis parlez à l'agent d'accueil.",
+    waitlistExpired: "La période d'attente de 10 minutes est terminée.",
+    recordingLimit: "La limite d'enregistrement de 15 minutes est atteinte.",
+    intakeTitle: "Parlez à l'agent d'accueil",
+    intakeName: "Votre nom",
+    intakeColors: "Vos couleurs préférées",
+    intakeMusic: "Votre expérience musicale",
+    intakeSubmit: "Partager avec l'agent",
+    intakeSaved: (name) => `Merci ${name}. L'agent vous connaît maintenant.`,
+    outcomeTitle: "Votre session est prête",
+    outcomePrompt: "Choisissez votre destination pour les 15 prochaines minutes.",
+    controlRoom: "Salle de contrôle",
+    bobDylanHall: "Salle Bob Dylan",
+    outcomeAccepted: (room) => `Bienvenue dans ${room}. Vous pouvez commencer l'enregistrement.`,
+    outcomeRejected: "La session d'enregistrement n'est pas disponible cette fois.",
+    runnerLink: "Aller à la machine de course",
     waitlistError: "Impossible de contacter la liste d'attente."
   } : {
     statusReady: "Ready to talk. Hold or click the microphone to start.",
@@ -34,10 +55,29 @@ import Hls from 'hls.js';
     recordFolderReady: "Record folder selected",
     recordFolderUnsupported: "Local recording is not supported by this browser.",
     waitlistJoin: "Join the waitlist",
+    waitlistEnter: "Enter the waitlist",
+    waitlistTimer: "Waiting time remaining",
+    waitlistTimerIdle: "Starts when you enter the waitlist",
+    waitlistTimerReady: "Waiting time complete",
     waitlistLeave: "Leave the waitlist",
     waitlistWaiting: (position, total, elapsed) => `Please wait. Position ${position} of ${total}. Elapsed: ${elapsed}.`,
     waitlistReady: "Five participants are active. You can record now.",
-    waitlistIdle: "Click the microphone to join the waitlist.",
+    waitlistIdle: "Click the button to enter the waitlist, then talk to the welcome agent.",
+    waitlistExpired: "The 10-minute waiting period has ended.",
+    recordingLimit: "The 15-minute recording limit has been reached.",
+    intakeTitle: "Talk to the welcome agent",
+    intakeName: "Your name",
+    intakeColors: "Your favourite colours",
+    intakeMusic: "Your musical experience",
+    intakeSubmit: "Share with the agent",
+    intakeSaved: (name) => `Thanks, ${name}. The agent knows you now.`,
+    outcomeTitle: "Your session is ready",
+    outcomePrompt: "Choose your destination for the next 15 minutes.",
+    controlRoom: "Control Room",
+    bobDylanHall: "Bob Dylan's Hall",
+    outcomeAccepted: (room) => `Welcome to ${room}. You can begin recording.`,
+    outcomeRejected: "The recording session is not available this time.",
+    runnerLink: "Go to the running machine",
     waitlistError: "Could not contact the waitlist."
   };
 
@@ -55,17 +95,30 @@ import Hls from 'hls.js';
   const consoleDiv = document.createElement('div');
   consoleDiv.className = 'playground-console';
   consoleDiv.innerHTML = `
+    <form id="agentIntake" class="advisory-intake">
+      <h3>${strings.intakeTitle}</h3>
+      <label>${strings.intakeName}<input id="agentName" name="name" required maxlength="80" autocomplete="name" /></label>
+      <label>${strings.intakeColors}<input id="agentColors" name="colors" required maxlength="120" /></label>
+      <label>${strings.intakeMusic}<textarea id="agentMusic" name="music" rows="3" maxlength="500" required></textarea></label>
+      <button type="submit">${strings.intakeSubmit}</button>
+      <p id="agentIntakeStatus" class="advisory-intake__status" role="status"></p>
+    </form>
     <div class="voice-button-container">
       <button id="voiceBtn" class="voice-btn" type="button" aria-label="Microphone">🎤</button>
     </div>
     <button id="recordFolderBtn" class="record-folder-btn" type="button">${strings.recordFolder}</button>
-    <section class="waitlist-panel" aria-live="polite">
-      <h3>${strings.waitlistJoin}</h3>
-      <p id="waitlistStatus">${strings.waitlistIdle}</p>
-      <p id="waitlistCount"></p>
-    <ol id="waitlistList" class="waitlist-list"></ol>
+    <section id="sessionOutcome" class="advisory-outcome" hidden>
+      <h3>${strings.outcomeTitle}</h3>
+      <p>${strings.outcomePrompt}</p>
+      <div class="advisory-outcome__choices">
+        <button type="button" data-room="control">${strings.controlRoom}</button>
+        <button type="button" data-room="hall">${strings.bobDylanHall}</button>
+      </div>
+      <button class="advisory-outcome__reject" id="rejectSession" type="button">${strings.outcomeRejected}</button>
+      <p id="sessionOutcomeStatus" class="advisory-outcome__status" role="status"></p>
+      <a href="./running%20machien.html">${strings.runnerLink}</a>
     </section>
-    <p id="novaControlStatus" class="console-status" aria-live="polite"></p>
+    <a class="advisory-runner-link" href="./running%20machien.html">${strings.runnerLink}</a>
     <div id="consoleStatus" class="console-status">${strings.statusReady}</div>
   `;
   mainApp.appendChild(consoleDiv);
@@ -85,16 +138,33 @@ import Hls from 'hls.js';
   let vadSpeechSamples = [];
   let vadSpeechActive = false;
   let vadSilenceFrames = 0;
-  let novaControlInFlight = Promise.resolve();
+  let audioOutputDestination = null;
+  let recordingTimeoutId = null;
+  let recordingStartedAt = null;
 
   const voiceBtn = document.querySelector('#voiceBtn');
+  const intakeForm = document.querySelector('#agentIntake');
+  const intakeStatus = document.querySelector('#agentIntakeStatus');
+  const agentName = document.querySelector('#agentName');
+  const agentColors = document.querySelector('#agentColors');
+  const agentMusic = document.querySelector('#agentMusic');
+  const sessionOutcome = document.querySelector('#sessionOutcome');
+  const sessionOutcomeStatus = document.querySelector('#sessionOutcomeStatus');
+  const rejectSession = document.querySelector('#rejectSession');
   const consoleStatus = document.querySelector('#consoleStatus');
-  const novaControlStatus = document.querySelector('#novaControlStatus');
   const recordFolderBtn = document.querySelector('#recordFolderBtn');
   const waitlistStatus = document.querySelector('#waitlistStatus');
   const waitlistCount = document.querySelector('#waitlistCount');
+  const waitlistCountdown = document.querySelector('#waitlistCountdown');
+  const waitlistTimerLabel = document.querySelector('#waitlistTimerLabel');
+  const waitlistBtn = document.querySelector('#waitlistBtn');
   const waitlistList = document.querySelector('#waitlistList');
   let waitlistState = 'idle';
+  let intakeComplete = false;
+  let joinedAt = Number(sessionStorage.getItem('advisory-joined-at')) || null;
+  let reservationStartedAt = Number(sessionStorage.getItem('advisory-reservation-started-at')) || null;
+  let outcomeShown = false;
+  let selectedRoom = null;
   let waitlistTimer = null;
   let waitingSince = null;
   let audioRoomSessionId = null;
@@ -151,7 +221,8 @@ import Hls from 'hls.js';
     if (audioRoomBroadcastAudio.canPlayType('application/vnd.apple.mpegurl')) {
       if (audioRoomBroadcastAudio.src !== playbackUrl) audioRoomBroadcastAudio.src = playbackUrl;
       await audioRoomBroadcastAudio.play().catch(() => {});
-    } else if (Hls.isSupported() && !audioRoomHls) {
+    } else if (window.Hls?.isSupported?.() && !audioRoomHls) {
+      const Hls = window.Hls;
       audioRoomHls = new Hls({ liveSyncDurationCount: 3 });
       audioRoomHls.loadSource(playbackUrl);
       audioRoomHls.attachMedia(audioRoomBroadcastAudio);
@@ -190,6 +261,43 @@ import Hls from 'hls.js';
     return [hours, minutes, remainder].map((value) => String(value).padStart(2, '0')).join(':');
   };
 
+  const getWaitlistRemainingSeconds = () => reservationStartedAt
+    ? Math.max(0, Math.ceil((reservationStartedAt + WAITING_ROOM_LIMIT_MS - Date.now()) / 1000))
+    : WAITING_ROOM_LIMIT_MS / 1000;
+
+  const updateWaitlistCountdown = () => {
+    const remainingSeconds = getWaitlistRemainingSeconds();
+    const minutes = Math.floor(remainingSeconds / 60);
+    const seconds = remainingSeconds % 60;
+    waitlistCountdown.textContent = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+    waitlistTimerLabel.textContent = remainingSeconds
+      ? (reservationStartedAt ? strings.waitlistTimer : strings.waitlistTimerIdle)
+      : strings.waitlistTimerReady;
+    waitlistCountdown.closest('.waitlist-timer').classList.toggle('is-running', Boolean(reservationStartedAt && remainingSeconds));
+  };
+
+  const loadIntake = () => {
+    try {
+      const saved = JSON.parse(sessionStorage.getItem('advisory-agent-intake') || 'null');
+      if (!saved?.name || !saved?.colors || !saved?.music) return;
+      agentName.value = saved.name;
+      agentColors.value = saved.colors;
+      agentMusic.value = saved.music;
+      intakeComplete = true;
+      intakeStatus.textContent = strings.intakeSaved(saved.name);
+    } catch (error) {
+      intakeComplete = false;
+    }
+  };
+
+  const showOutcome = (roomReady) => {
+    if (outcomeShown) return;
+    outcomeShown = true;
+    sessionOutcome.hidden = false;
+    sessionOutcome.querySelectorAll('[data-room]').forEach((button) => { button.disabled = !roomReady; });
+    sessionOutcomeStatus.textContent = roomReady ? strings.outcomePrompt : strings.outcomeRejected;
+  };
+
   const updateWaitlist = async () => {
     const apiBaseUrl = (import.meta.env.VITE_API_BASE_URL || '').replace(/\/+$/, '');
     const response = await apiFetch(`${apiBaseUrl}/api/waitlist`);
@@ -199,36 +307,82 @@ import Hls from 'hls.js';
     waitingSince = status.waitingSince;
     waitlistStatus.dataset.position = status.position;
     waitlistStatus.dataset.waiting = status.waiting;
+    if (status.state === 'waiting' && status.waitingSince && Date.now() - new Date(status.waitingSince).getTime() >= WAITING_ROOM_LIMIT_MS) {
+      window.location.href = './running%20machien.html';
+      return;
+    }
     waitlistCount.textContent = isFrench
-      ? `Enregistrement: ${status.active || 0}/5 · En attente: ${status.waiting}`
-      : `Recording: ${status.active || 0}/5 · Waiting: ${status.waiting}`;
+      ? `Enregistrement: ${status.active || 0}/${ROOM_CAPACITY} · En attente: ${status.waiting}`
+      : `Recording: ${status.active || 0}/${ROOM_CAPACITY} · Waiting: ${status.waiting}`;
     waitlistList.innerHTML = '';
     for (let index = 0; index < status.waiting; index++) {
       const item = document.createElement('li');
       item.textContent = index === status.position - 1 ? `${strings.waitlistJoin} (${index + 1})` : `Participant ${index + 1}`;
       waitlistList.appendChild(item);
     }
-    if (status.state === 'ready') {
+    const reservationExpired = !getWaitlistRemainingSeconds();
+    const hasVerifiedWaitingSession = Boolean(intakeComplete && joinedAt);
+    if (status.state === 'ready' && reservationExpired && hasVerifiedWaitingSession) {
+      showOutcome(true);
       waitlistStatus.textContent = strings.waitlistReady;
-      voiceBtn.disabled = false;
+      updateWaitlistCountdown();
+      waitlistBtn.hidden = true;
+      voiceBtn.disabled = !selectedRoom;
       voiceBtn.textContent = isRecording ? strings.micBtnStop : strings.micBtnStart;
+    } else if (status.state === 'ready') {
+      waitlistStatus.textContent = isFrench ? 'Orientation en cours. La salle sera disponible après 10 minutes.' : 'Orientation is in progress. The room will open after 10 minutes.';
+      waitlistBtn.hidden = false;
+      waitlistBtn.disabled = true;
+      updateWaitlistCountdown();
+      voiceBtn.disabled = true;
+      voiceBtn.textContent = strings.waitlistJoin;
     } else if (status.state === 'waiting') {
       waitlistStatus.textContent = strings.waitlistWaiting(status.position, status.waiting, formatElapsed());
-      voiceBtn.textContent = strings.waitlistLeave;
+      updateWaitlistCountdown();
+      waitlistBtn.hidden = false;
+      waitlistBtn.textContent = strings.waitlistLeave;
+      waitlistBtn.disabled = false;
+      voiceBtn.disabled = true;
+      if (!getWaitlistRemainingSeconds()) {
+        window.location.href = './running%20machien.html';
+        return;
+      }
     } else {
       waitlistStatus.textContent = strings.waitlistIdle;
-      voiceBtn.textContent = strings.waitlistJoin;
-      voiceBtn.disabled = false;
+      waitingSince = null;
+      updateWaitlistCountdown();
+      waitlistBtn.hidden = false;
+      waitlistBtn.textContent = strings.waitlistEnter;
+      waitlistBtn.disabled = false;
+      voiceBtn.disabled = true;
     }
     if (status.state === 'ready' && audioRoomRole === 'listener') disconnectAudioRoom();
-    if (['waiting', 'ready'].includes(status.state)) await connectAudioRoom();
-    else disconnectAudioRoom();
+    if (['waiting', 'ready'].includes(status.state)) {
+      try {
+        await connectAudioRoom();
+      } catch (error) {
+        window.location.href = './running%20machien.html';
+        return;
+      }
+    } else {
+      if (waitlistTimer) window.clearInterval(waitlistTimer);
+      waitlistTimer = null;
+      disconnectAudioRoom();
+    }
   };
 
   const joinWaitlist = async () => {
     const apiBaseUrl = (import.meta.env.VITE_API_BASE_URL || '').replace(/\/+$/, '');
-    const response = await apiFetch(`${apiBaseUrl}/api/waitlist`, { method: 'POST' });
+    const response = await apiFetch(`${apiBaseUrl}/api/waitlist`, {
+      method: 'POST',
+      headers: {
+        'X-Room-Capacity': String(ROOM_CAPACITY),
+        'X-Waiting-Room-Limit-Seconds': String(WAITING_ROOM_LIMIT_MS / 1000)
+      }
+    });
     if (!response.ok) throw new Error(strings.waitlistError);
+    joinedAt = Date.now();
+    sessionStorage.setItem('advisory-joined-at', String(joinedAt));
     await updateWaitlist();
     if (!waitlistTimer) waitlistTimer = window.setInterval(() => updateWaitlist().catch(console.error), 2000);
   };
@@ -240,26 +394,7 @@ import Hls from 'hls.js';
     await updateWaitlist();
   };
 
-  const sendNovaControlWindow = (samples, inputSampleRate) => {
-    if (!samples.length || waitlistState !== 'ready') return;
-    const pcm16 = downsampleAndConvertTo16BitPCM(samples, inputSampleRate, 16000);
-    if (pcm16.length < 1600) return;
-    const rms = Math.sqrt(pcm16.reduce((sum, sample) => sum + (sample / 32768) ** 2, 0) / pcm16.length);
-    if (rms < 0.012) return;
-    const blob = pcmToWav(new Uint8Array(pcm16.buffer), 16000);
-    novaControlStatus.textContent = isFrench ? 'Fenêtre vocale envoyée au contrôle.' : 'Speech window sent to control sidecar.';
-    novaControlInFlight = novaControlInFlight.then(async () => {
-      const response = await audioRoomApi('/api/nova-control', { method: 'POST', headers: { 'Content-Type': 'audio/wav', 'X-Audio-Sample-Rate': '16000' }, body: blob });
-      const result = await response.json().catch(() => ({}));
-      if (!response.ok) throw new Error(result.error || strings.apiError);
-      if (result.action === 'tool') novaControlStatus.textContent = `${isFrench ? 'Contrôle' : 'Control'}: ${result.tool.name}`;
-      else novaControlStatus.textContent = isFrench ? 'Aucune action.' : 'No action.';
-    }).catch((error) => {
-      novaControlStatus.textContent = `${strings.statusError}${error.message}`;
-    });
-  };
-
-  const consumeVadFrame = (channelData, inputSampleRate) => {
+  const speechDetected = (channelData) => {
     const rms = Math.sqrt(channelData.reduce((sum, sample) => sum + sample * sample, 0) / channelData.length);
     if (vadCalibrationFrames < 20) {
       vadNoiseFloor = vadNoiseFloor * 0.9 + rms * 0.1;
@@ -271,18 +406,18 @@ import Hls from 'hls.js';
     if (meaningfulSpeech) {
       if (!vadSpeechActive) { vadSpeechActive = true; vadSpeechSamples = []; }
       vadSilenceFrames = 0;
-      vadSpeechSamples.push(...channelData);
+      return true;
     } else if (vadSpeechActive) {
       vadSilenceFrames += 1;
-      vadSpeechSamples.push(...channelData);
       const reachedPause = vadSilenceFrames >= 5;
-      const reachedWindowLimit = vadSpeechSamples.length >= inputSampleRate * 3;
-      if (reachedPause || reachedWindowLimit) {
-        sendNovaControlWindow(vadSpeechSamples.splice(0), inputSampleRate);
-        vadSpeechActive = false;
-        vadSilenceFrames = 0;
-      }
+      if (reachedPause) { vadSpeechActive = false; vadSilenceFrames = 0; }
     }
+    return false;
+  };
+
+  const removeSpeech = (channelData) => {
+    if (!speechDetected(channelData)) return channelData;
+    return new Float32Array(channelData.length);
   };
 
   const pcmToWav = (pcmBytes, sampleRate) => {
@@ -346,14 +481,25 @@ import Hls from 'hls.js';
     return anonymousSessionIdPromise;
   };
 
-  const uploadRecording = async (sessionId, role, blob) => {
+  const uploadRecording = async (sessionId, role, blob, metadata = {}) => {
     const apiBaseUrl = (import.meta.env.VITE_API_BASE_URL || '').replace(/\/+$/, '');
     const response = await apiFetch(`${apiBaseUrl}/api/recordings`, {
       method: 'POST',
       headers: {
         'Content-Type': 'audio/wav',
         'X-Session-Id': sessionId,
-        'X-Recording-Role': role
+        'X-Recording-Role': role,
+        'X-Room-Capacity': String(ROOM_CAPACITY),
+        'X-Waiting-Room-Limit-Seconds': String(WAITING_ROOM_LIMIT_MS / 1000),
+        'X-Recording-Metadata': JSON.stringify({
+          ...metadata,
+          destination: selectedRoom,
+          roomCapacity: ROOM_CAPACITY,
+          waitingLimitMinutes: 10,
+          recordingLimitMinutes: 15,
+          speechSuppressed: true,
+          retainedAudio: ['instruments', 'background-noise']
+        })
       },
       body: blob
     });
@@ -369,7 +515,11 @@ import Hls from 'hls.js';
     streamChunkUploadPromise = streamChunkUploadPromise.then(async () => {
       const sessionId = await getAnonymousSessionId();
       await saveRecording(`stream-chunk-${String(chunkNumber).padStart(6, '0')}.wav`, blob);
-      await uploadRecording(sessionId, 'user', blob);
+      await uploadRecording(sessionId, 'user', blob, {
+        chunkNumber,
+        durationSeconds: samples.length / inputSampleRate,
+        recordedAt: new Date().toISOString()
+      });
     }).catch((error) => {
       console.error(`Could not upload live 20-second audio chunk ${chunkNumber}:`, error);
     });
@@ -410,17 +560,18 @@ import Hls from 'hls.js';
 
     try {
       mediaStream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      audioRoomStream = mediaStream;
-      await publishRoomStream();
       audioContext = new (window.AudioContext || window.webkitAudioContext)();
       const source = audioContext.createMediaStreamSource(mediaStream);
       scriptProcessor = audioContext.createScriptProcessor(4096, 1, 1);
+      audioOutputDestination = audioContext.createMediaStreamDestination();
+      audioRoomStream = audioOutputDestination.stream;
 
       scriptProcessor.onaudioprocess = (e) => {
         if (!isRecording) return;
         const channelData = e.inputBuffer.getChannelData(0);
-        consumeVadFrame(channelData, audioContext.sampleRate);
-        streamChunkSamples.push(...channelData);
+        const filteredData = removeSpeech(channelData);
+        e.outputBuffer.getChannelData(0).set(filteredData);
+        streamChunkSamples.push(...filteredData);
         const chunkLength = Math.floor(audioContext.sampleRate * 20);
         while (streamChunkSamples.length >= chunkLength) {
           queueStreamChunk(streamChunkSamples.splice(0, chunkLength), audioContext.sampleRate);
@@ -428,9 +579,14 @@ import Hls from 'hls.js';
       };
 
       source.connect(scriptProcessor);
-      const mutedOutput = audioContext.createGain();
-      mutedOutput.gain.value = 0;
-      scriptProcessor.connect(mutedOutput).connect(audioContext.destination);
+      scriptProcessor.connect(audioOutputDestination);
+      await publishRoomStream();
+      recordingStartedAt = Date.now();
+      recordingTimeoutId = window.setTimeout(() => {
+        if (!isRecording) return;
+        stopRecordingAndSend().catch((error) => console.error('Could not stop timed recording:', error));
+        consoleStatus.textContent = strings.recordingLimit;
+      }, RECORDING_LIMIT_MS);
     } catch (err) {
       console.error('Failed to access microphone', err);
       stopRecordingState();
@@ -441,7 +597,8 @@ import Hls from 'hls.js';
 
   const stopRecordingState = () => {
     isRecording = false;
-    if (vadSpeechActive && vadSpeechSamples.length) sendNovaControlWindow(vadSpeechSamples.splice(0), audioContext?.sampleRate || 48000);
+    if (recordingTimeoutId) window.clearTimeout(recordingTimeoutId);
+    recordingTimeoutId = null;
     vadSpeechActive = false;
     vadSilenceFrames = 0;
     voiceBtn.classList.remove('recording');
@@ -458,11 +615,13 @@ import Hls from 'hls.js';
       audioRoomApi('/api/audio-room/close-track', { method: 'PUT', body: JSON.stringify({ sessionId: audioRoomSessionId, trackName: audioRoomPublishedTrackName }) }).catch(() => {});
     }
     audioRoomStream = null;
+    audioOutputDestination = null;
     audioRoomPublishedTrackName = null;
     if (audioContext) {
       audioContext.close();
       audioContext = null;
     }
+    recordingStartedAt = null;
   };
 
   // Stop recording after flushing the final partial stream chunk.
@@ -476,13 +635,54 @@ import Hls from 'hls.js';
     consoleStatus.className = 'console-status';
   };
 
+  intakeForm.addEventListener('submit', (event) => {
+    event.preventDefault();
+    const intake = { name: agentName.value.trim(), colors: agentColors.value.trim(), music: agentMusic.value.trim() };
+    if (!intake.name || !intake.colors || !intake.music) return;
+    sessionStorage.setItem('advisory-agent-intake', JSON.stringify(intake));
+    intakeComplete = true;
+    intakeStatus.textContent = strings.intakeSaved(intake.name);
+    if (waitlistState === 'idle') waitlistBtn.disabled = false;
+  });
+
+  sessionOutcome.querySelectorAll('[data-room]').forEach((button) => {
+    button.addEventListener('click', () => {
+      if (!intakeComplete || !joinedAt || waitlistState !== 'ready' || getWaitlistRemainingSeconds()) {
+        window.location.href = './running%20machien.html';
+        return;
+      }
+      selectedRoom = button.dataset.room;
+      const roomName = selectedRoom === 'control' ? strings.controlRoom : strings.bobDylanHall;
+      sessionOutcomeStatus.textContent = strings.outcomeAccepted(roomName);
+      voiceBtn.disabled = false;
+      voiceBtn.textContent = strings.micBtnStart;
+    });
+  });
+
+  rejectSession.addEventListener('click', async () => {
+    if (['waiting', 'ready'].includes(waitlistState)) await leaveWaitlist().catch(() => {});
+    window.location.href = './running%20machien.html';
+  });
+
+  loadIntake();
+
   // Admission control gates the existing per-turn recording flow.
   updateWaitlist().catch((error) => {
     waitlistStatus.textContent = error.message;
   });
 
   window.setInterval(() => {
+    updateWaitlistCountdown();
+    if (!getWaitlistRemainingSeconds()) {
+      if (!intakeComplete || !joinedAt || waitlistState !== 'ready') {
+        window.location.href = './running%20machien.html';
+        return;
+      }
+      updateWaitlist().catch(() => { window.location.href = './running%20machien.html'; });
+      return;
+    }
     if (waitlistState === 'waiting' && waitingSince) {
+      updateWaitlistCountdown();
       waitlistStatus.textContent = strings.waitlistWaiting(
         Number(waitlistStatus.dataset.position || 0),
         Number(waitlistStatus.dataset.waiting || 0),
@@ -491,20 +691,33 @@ import Hls from 'hls.js';
     }
   }, 1000);
 
-  voiceBtn.textContent = strings.waitlistJoin;
+  waitlistBtn.disabled = false;
+  voiceBtn.disabled = true;
+  waitlistBtn.addEventListener('click', async () => {
+    if (!reservationStartedAt) {
+      reservationStartedAt = Date.now();
+      sessionStorage.setItem('advisory-reservation-started-at', String(reservationStartedAt));
+      updateWaitlistCountdown();
+    }
+    joinedAt = Date.now();
+    sessionStorage.setItem('advisory-joined-at', String(joinedAt));
+    waitlistBtn.disabled = true;
+    try {
+      if (waitlistState === 'waiting') await leaveWaitlist();
+      else if (waitlistState === 'idle') await joinWaitlist();
+    } catch (error) {
+      joinedAt = null;
+      sessionStorage.removeItem('advisory-joined-at');
+      updateWaitlistCountdown();
+      waitlistStatus.textContent = error.message;
+      waitlistBtn.disabled = false;
+    }
+  });
   voiceBtn.addEventListener('click', async () => {
     if (waitlistState === 'ready') {
       if (isRecording) await stopRecordingAndSend();
       else await startRecording();
       return;
-    }
-    voiceBtn.disabled = true;
-    try {
-      if (waitlistState === 'waiting') await leaveWaitlist();
-      else if (waitlistState === 'idle') await joinWaitlist();
-    } catch (error) {
-      waitlistStatus.textContent = error.message;
-      voiceBtn.disabled = false;
     }
   });
 

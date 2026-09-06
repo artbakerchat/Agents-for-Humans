@@ -41,8 +41,19 @@
         <div>
           <p class="eyebrow">Voice playground</p>
           <h2>Advisory control room</h2>
-          <p class="subtitle">Join the Bob Dylan's room for five-person only to share your background noise and musical instruments. Voice activity detection filters any meaningful speech out.</p>
+          <p class="subtitle">Wait up to 10 minutes to enter a five-person room, then record for up to 15 minutes while speech is removed and instruments and background noise remain.</p>
         </div>
+      </section>
+      <section class="waitlist-panel" aria-live="polite">
+        <h3>Join the waiting list</h3>
+        <div class="waitlist-timer" aria-live="polite">
+          <strong id="waitlistCountdown">10:00</strong>
+          <span id="waitlistTimerLabel">Starts when you enter the waitlist</span>
+        </div>
+        <p id="waitlistStatus">Click the button to enter the waitlist, then talk to the welcome agent.</p>
+        <p id="waitlistCount"></p>
+        <button id="waitlistBtn" class="waitlist-btn" type="button">Enter the waitlist</button>
+        <ol id="waitlistList" class="waitlist-list"></ol>
       </section>
       <div id="turnstile-widget" class="turnstile-widget" aria-label="Human verification"></div>
     </main>
